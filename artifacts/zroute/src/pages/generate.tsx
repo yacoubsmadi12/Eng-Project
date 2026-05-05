@@ -102,19 +102,24 @@ function RequirementsForm({
   );
 }
 
-function GeneratedPlanList({ plans, onSave, saving }: {
+function GeneratedPlanList({ plans, onSave, saving, canSave }: {
   plans: any[];
   onSave: () => void;
   saving: boolean;
+  canSave: boolean;
 }) {
   if (!plans.length) return null;
   return (
     <div className="space-y-3 mt-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">{plans.length} plan{plans.length !== 1 ? "s" : ""} generated</p>
-        <Button size="sm" onClick={onSave} disabled={saving}>
-          {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
-        </Button>
+        {canSave ? (
+          <Button size="sm" onClick={onSave} disabled={saving}>
+            {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground italic">View only — Admin can save to DB</span>
+        )}
       </div>
       <div className="space-y-2">
         {plans.map((p, i) => (
@@ -138,7 +143,7 @@ function GeneratedPlanList({ plans, onSave, saving }: {
   );
 }
 
-function PlanFileTab({ dbSites }: { dbSites: any[] }) {
+function PlanFileTab({ dbSites, canSave }: { dbSites: any[]; canSave: boolean }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -270,12 +275,12 @@ function PlanFileTab({ dbSites }: { dbSites: any[] }) {
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} />
+      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
     </div>
   );
 }
 
-function NewSitesTab() {
+function NewSitesTab({ canSave }: { canSave: boolean }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -403,7 +408,7 @@ function NewSitesTab() {
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} />
+      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
     </div>
   );
 }
@@ -416,13 +421,15 @@ export default function GeneratePage() {
     queryFn: () => api.sites.list(),
   });
 
-  if (user?.role !== "admin") {
+  if (user?.role === "user") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Access denied</p>
       </div>
     );
   }
+
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -441,6 +448,7 @@ export default function GeneratePage() {
             </a>
             <Separator orientation="vertical" className="h-4" />
             <span className="text-sm font-medium">Generate Plans</span>
+            {!isAdmin && <Badge variant="secondary" className="text-xs">View Only</Badge>}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">{user?.displayName}</span>
@@ -463,10 +471,10 @@ export default function GeneratePage() {
             <TabsTrigger value="newsites">New Sites</TabsTrigger>
           </TabsList>
           <TabsContent value="planfile">
-            <PlanFileTab dbSites={dbSites as any[]} />
+            <PlanFileTab dbSites={dbSites as any[]} canSave={isAdmin} />
           </TabsContent>
           <TabsContent value="newsites">
-            <NewSitesTab />
+            <NewSitesTab canSave={isAdmin} />
           </TabsContent>
         </Tabs>
       </main>

@@ -94,7 +94,13 @@ router.delete("/plans", requireAuth, async (_req, res) => {
   res.json({ message: "All plans cleared" });
 });
 
-router.post("/plans/append", requireAuth, async (req, res) => {
+router.post("/plans/append", requireAuth, (req, res, next) => {
+  if ((req.session as any)?.user?.role !== "admin") {
+    res.status(403).json({ error: "Admin only" });
+    return;
+  }
+  next();
+}, async (req, res) => {
   const plans = req.body as any[];
   if (!Array.isArray(plans)) { res.status(400).json({ error: "Expected array" }); return; }
   if (!plans.length) { res.json({ message: "No plans to append" }); return; }
