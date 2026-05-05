@@ -310,8 +310,8 @@ function NewSitesTab({ canSave }: { canSave: boolean }) {
       const parsed: NewSiteRow[] = rows.map((r, i) => ({
         id: g(r, C.id) || `NS-${i + 1}`,
         name: g(r, C.name) || `New Site ${i + 1}`,
-        lat: parseFloat(r[C.lat]),
-        lng: parseFloat(r[C.lng]),
+        lat: parseFloat(r[C.lat!]),
+        lng: parseFloat(r[C.lng!]),
         gov: g(r, C.gov),
         plannerName: g(r, C.planner),
       })).filter(s => !isNaN(s.lat) && !isNaN(s.lng));

@@ -45,9 +45,4 @@ export const api = {
       req<any>("POST", "/users", data),
     delete: (id: number) => req<{ message: string }>("DELETE", `/users/${id}`),
   },
-  sites: {
-    list: () => req<any[]>("GET", "/sites"),
-    bulk: (sites: any[]) => req<{ message: string }>("POST", "/sites/bulk", sites),
-    clear: () => req<{ message: string }>("DELETE", "/sites"),
-  },
 };
