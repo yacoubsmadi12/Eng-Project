@@ -51,6 +51,11 @@ router.post("/users", requireAdmin, async (req, res) => {
 router.delete("/users/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const found = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (found.length && found[0].role === "admin") {
+    res.status(403).json({ error: "Cannot delete the admin account" });
+    return;
+  }
   await db.delete(usersTable).where(eq(usersTable.id, id));
   res.json({ message: "Deleted" });
 });

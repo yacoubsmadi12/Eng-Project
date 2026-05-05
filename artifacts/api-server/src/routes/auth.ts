@@ -4,20 +4,10 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-const ADMIN_USER = process.env.ADMIN_USER || "Adm.Zain";
-const ADMIN_PASS = process.env.ADMIN_PASS || "Zain@1202";
-
 router.post("/auth/login", async (req, res) => {
   const { username, password } = req.body as { username: string; password: string };
   if (!username || !password) {
     res.status(400).json({ error: "Username and password required" });
-    return;
-  }
-
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const user = { username: ADMIN_USER, displayName: "Admin", plannerName: "Admin", role: "admin" };
-    (req.session as any).user = user;
-    res.json(user);
     return;
   }
 
