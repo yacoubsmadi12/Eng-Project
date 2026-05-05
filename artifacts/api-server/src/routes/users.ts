@@ -1,0 +1,56 @@
+import { Router } from "express";
+import { db, usersTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+
+const router = Router();
+
+function requireAdmin(req: any, res: any, next: any) {
+  const user = (req.session as any)?.user;
+  if (!user || user.role !== "admin") {
+    res.status(403).json({ error: "Admin only" });
+    return;
+  }
+  next();
+}
+
+router.get("/users", requireAdmin, async (_req, res) => {
+  const users = await db.select({
+    id: usersTable.id,
+    username: usersTable.username,
+    displayName: usersTable.displayName,
+    plannerName: usersTable.plannerName,
+    role: usersTable.role,
+  }).from(usersTable);
+  res.json(users);
+});
+
+router.post("/users", requireAdmin, async (req, res) => {
+  const { username, password, displayName, plannerName } = req.body as {
+    username: string; password: string; displayName: string; plannerName: string;
+  };
+  if (!username || !password || !displayName) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+  const existing = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
+  if (existing.length) {
+    res.status(400).json({ error: "Username already exists" });
+    return;
+  }
+  const [created] = await db.insert(usersTable).values({
+    username, password, displayName, plannerName: plannerName || displayName, role: "user"
+  }).returning({
+    id: usersTable.id, username: usersTable.username,
+    displayName: usersTable.displayName, plannerName: usersTable.plannerName, role: usersTable.role
+  });
+  res.status(201).json(created);
+});
+
+router.delete("/users/:id", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  await db.delete(usersTable).where(eq(usersTable.id, id));
+  res.json({ message: "Deleted" });
+});
+
+export default router;
