@@ -136,6 +136,28 @@ function UsersTab() {
   );
 }
 
+function ConfirmDialog({ open, title, description, onConfirm, onCancel, loading }: {
+  open: boolean; title: string; description: string;
+  onConfirm: () => void; onCancel: () => void; loading?: boolean;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onCancel()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onCancel} disabled={loading}>Cancel</Button>
+          <Button variant="destructive" onClick={onConfirm} disabled={loading}>
+            {loading ? "Clearing..." : "Clear"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DataTab() {
   const { toast } = useToast();
   const sitesRef = useRef<HTMLInputElement>(null);
@@ -144,6 +166,8 @@ function DataTab() {
   const [plansLoading, setPlansLoading] = useState(false);
   const [clearSitesLoading, setClearSitesLoading] = useState(false);
   const [clearPlansLoading, setClearPlansLoading] = useState(false);
+  const [confirmSites, setConfirmSites] = useState(false);
+  const [confirmPlans, setConfirmPlans] = useState(false);
 
   const loadJson = (file: File): Promise<any[]> => {
     return new Promise((res, rej) => {
@@ -189,7 +213,7 @@ function DataTab() {
   };
 
   const clearSites = async () => {
-    if (!confirm("Clear all sites? This cannot be undone.")) return;
+    setConfirmSites(false);
     setClearSitesLoading(true);
     try {
       const res = await api.sites.clear();
@@ -202,7 +226,7 @@ function DataTab() {
   };
 
   const clearPlans = async () => {
-    if (!confirm("Clear all plans? This cannot be undone.")) return;
+    setConfirmPlans(false);
     setClearPlansLoading(true);
     try {
       const res = await api.plans.clear();
@@ -237,7 +261,7 @@ function DataTab() {
               size="sm"
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
               disabled={clearSitesLoading}
-              onClick={clearSites}
+              onClick={() => setConfirmSites(true)}
             >
               {clearSitesLoading ? "Clearing..." : "Clear All Sites"}
             </Button>
@@ -266,13 +290,30 @@ function DataTab() {
               size="sm"
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
               disabled={clearPlansLoading}
-              onClick={clearPlans}
+              onClick={() => setConfirmPlans(true)}
             >
               {clearPlansLoading ? "Clearing..." : "Clear All Plans"}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmSites}
+        title="Clear All Sites?"
+        description="This will permanently delete all site records from the database. This action cannot be undone."
+        onConfirm={clearSites}
+        onCancel={() => setConfirmSites(false)}
+        loading={clearSitesLoading}
+      />
+      <ConfirmDialog
+        open={confirmPlans}
+        title="Clear All Plans?"
+        description="This will permanently delete all plan records from the database. This action cannot be undone."
+        onConfirm={clearPlans}
+        onCancel={() => setConfirmPlans(false)}
+        loading={clearPlansLoading}
+      />
     </div>
   );
 }
