@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "@/context/auth";
 import LoginPage from "@/pages/login";
 import DashboardPage from "@/pages/dashboard";
 import AdminPage from "@/pages/admin";
+import GeneratePage from "@/pages/generate";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ function AppRoutes() {
     <Switch>
       <Route path="/" component={DashboardPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/generate" component={GeneratePage} />
       <Route component={NotFound} />
     </Switch>
   );

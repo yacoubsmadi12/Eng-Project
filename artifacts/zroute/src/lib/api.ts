@@ -34,6 +34,7 @@ export const api = {
   plans: {
     list: () => req<any[]>("GET", "/plans"),
     bulk: (plans: any[]) => req<{ message: string }>("POST", "/plans/bulk", plans),
+    append: (plans: any[]) => req<{ message: string }>("POST", "/plans/append", plans),
     update: (id: number, plan: any) => req<{ message: string }>("PUT", `/plans/${id}`, plan),
     delete: (id: number) => req<{ message: string }>("DELETE", `/plans/${id}`),
     clear: () => req<{ message: string }>("DELETE", "/plans"),
@@ -43,5 +44,10 @@ export const api = {
     create: (data: { username: string; password: string; displayName: string; plannerName: string }) =>
       req<any>("POST", "/users", data),
     delete: (id: number) => req<{ message: string }>("DELETE", `/users/${id}`),
+  },
+  sites: {
+    list: () => req<any[]>("GET", "/sites"),
+    bulk: (sites: any[]) => req<{ message: string }>("POST", "/sites/bulk", sites),
+    clear: () => req<{ message: string }>("DELETE", "/sites"),
   },
 };

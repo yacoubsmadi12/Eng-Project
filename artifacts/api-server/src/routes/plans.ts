@@ -94,4 +94,30 @@ router.delete("/plans", requireAuth, async (_req, res) => {
   res.json({ message: "All plans cleared" });
 });
 
+router.post("/plans/append", requireAuth, async (req, res) => {
+  const plans = req.body as any[];
+  if (!Array.isArray(plans)) { res.status(400).json({ error: "Expected array" }); return; }
+  if (!plans.length) { res.json({ message: "No plans to append" }); return; }
+
+  const existing = await db.select({ clientId: plansTable.clientId }).from(plansTable);
+  const usedIds = new Set(existing.map(r => r.clientId));
+  let nextId = usedIds.size ? Math.max(...usedIds) + 1 : 1;
+
+  const rows = plans.map(p => ({
+    clientId: nextId++,
+    teamName: p.teamName,
+    plannerName: p.plannerName,
+    planName: p.planName || "",
+    color: p.color || "#00d4ff",
+    km: p.km || 0,
+    isNewSites: p.isNewSites || false,
+    hqSiteId: p.hqSiteId || null,
+    dayGroups: p.dayGroups,
+    siteIds: p.siteIds,
+  }));
+
+  await db.insert(plansTable).values(rows);
+  res.status(201).json({ message: `Appended ${rows.length} plans` });
+});
+
 export default router;
