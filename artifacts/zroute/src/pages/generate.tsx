@@ -421,15 +421,9 @@ export default function GeneratePage() {
     queryFn: () => api.sites.list(),
   });
 
-  if (user?.role === "user") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Access denied</p>
-      </div>
-    );
-  }
-
   const isAdmin = user?.role === "admin";
+  const isViewer = user?.role === "viewer";
+  const canSavePlans = isAdmin || user?.role === "user";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -448,7 +442,7 @@ export default function GeneratePage() {
             </a>
             <Separator orientation="vertical" className="h-4" />
             <span className="text-sm font-medium">Generate Plans</span>
-            {!isAdmin && <Badge variant="secondary" className="text-xs">View Only</Badge>}
+            {isViewer && <Badge variant="secondary" className="text-xs">View Only</Badge>}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">{user?.displayName}</span>
@@ -471,10 +465,10 @@ export default function GeneratePage() {
             <TabsTrigger value="newsites">New Sites</TabsTrigger>
           </TabsList>
           <TabsContent value="planfile">
-            <PlanFileTab dbSites={dbSites as any[]} canSave={isAdmin} />
+            <PlanFileTab dbSites={dbSites as any[]} canSave={canSavePlans} />
           </TabsContent>
           <TabsContent value="newsites">
-            <NewSitesTab canSave={isAdmin} />
+            <NewSitesTab canSave={canSavePlans} />
           </TabsContent>
         </Tabs>
       </main>

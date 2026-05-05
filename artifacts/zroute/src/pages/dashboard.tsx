@@ -206,7 +206,7 @@ export default function DashboardPage() {
                 Export All
               </Button>
             )}
-            {(isAdmin || isViewer) && (
+            {(isAdmin || isViewer || user?.role === "user") && (
               <a href="/generate">
                 <Button variant="outline" size="sm">
                   <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

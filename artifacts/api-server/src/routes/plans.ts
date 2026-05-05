@@ -95,8 +95,9 @@ router.delete("/plans", requireAuth, async (_req, res) => {
 });
 
 router.post("/plans/append", requireAuth, (req, res, next) => {
-  if ((req.session as any)?.user?.role !== "admin") {
-    res.status(403).json({ error: "Admin only" });
+  const role = (req.session as any)?.user?.role;
+  if (role !== "admin" && role !== "user") {
+    res.status(403).json({ error: "Not allowed" });
     return;
   }
   next();

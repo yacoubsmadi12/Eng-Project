@@ -1,0 +1,17 @@
+FROM node:20-alpine AS builder
+RUN npm install -g pnpm
+WORKDIR /app
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig*.json ./
+COPY lib/ ./lib/
+COPY artifacts/zroute/ ./artifacts/zroute/
+COPY attached_assets/ ./attached_assets/
+RUN pnpm install --frozen-lockfile
+ARG BASE_PATH=/
+ENV BASE_PATH=$BASE_PATH
+RUN pnpm --filter @workspace/zroute run build
+
+FROM node:20-alpine
+RUN npm install -g serve
+COPY --from=builder /app/artifacts/zroute/dist/public /public
+ENV PORT=3000
+CMD ["serve", "-s", "/public", "-l", "3000"]

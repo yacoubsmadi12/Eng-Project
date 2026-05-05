@@ -1,55 +1,86 @@
-# Workspace
-
-## Overview
-
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+# Z Route Master — Workspace
 
 ## Stack
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **Monorepo**: pnpm workspaces
+- **Node.js**: 20+
+- **TypeScript**: 5.9
+- **API**: Express 5 + express-session (pg store)
 - **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Frontend**: React + Vite + TailwindCSS + shadcn/ui
 
-## Project: Z Route Master
+## Artifacts
 
-A field operations routing management system for telecom/utility sites.
+| Artifact | Path | Description |
+|---|---|---|
+| `artifacts/zroute` | `/` | React + Vite frontend |
+| `artifacts/api-server` | `/api` | Express 5 backend |
+| `artifacts/mockup-sandbox` | `/__mockup` | Component prototyping |
 
-### Artifacts
-- **`artifacts/zroute`** — React + Vite frontend (preview path: `/`)
-- **`artifacts/api-server`** — Express 5 backend (preview path: `/api`)
-- **`artifacts/mockup-sandbox`** — Component prototyping (preview path: `/__mockup`)
+## Role System
 
-### Frontend (`artifacts/zroute`)
-- `src/lib/api.ts` — Typed API client (fetch-based, credentials included)
-- `src/context/auth.tsx` — Auth context (login, logout, session check on load)
-- `src/pages/login.tsx` — Login page (redirects to dashboard on success)
-- `src/pages/dashboard.tsx` — Plans view with search; admin badge + link to admin panel
-- `src/pages/admin.tsx` — Admin panel: user management + bulk JSON data upload
+| Role | Access |
+|---|---|
+| **admin** | Everything: upload sites, manage users, generate & save plans, export |
+| **user** | Generate plans (New Sites + Plan File) & save own plans, see own plans only |
+| **viewer** | See ALL plans + export Excel — cannot save new plans |
 
-### Backend (`artifacts/api-server`)
-- `src/routes/auth.ts` — Login/logout/me with express-session + pg store
-- `src/routes/sites.ts` — Sites CRUD (list, bulk upload, clear)
-- `src/routes/plans.ts` — Plans CRUD (list filtered by role, bulk, update, delete)
-- `src/routes/users.ts` — Admin-only user management (list, create, delete)
+- Admin is seeded into DB (`Adm.Zain` / `Zain@1202`)
+- Admin account cannot be deleted
+- Sites upload/clear: admin only
+- Plans append: admin + user roles
+- Plan list: admin/viewer see all; user sees only plans matching their plannerName
 
-### Auth
-- Admin credentials: `ADMIN_USER` / `ADMIN_PASS` env vars (defaults: `Adm.Zain` / `Zain@1202`)
-- Regular users stored in DB with `username`, `password`, `displayName`, `plannerName`, `role`
-- Sessions stored in PostgreSQL (`user_sessions` table)
-- Role-based plan filtering: admins see all plans, users see only their own (matched by `plannerName`)
+## Key Files
+
+### Frontend (`artifacts/zroute/src`)
+- `lib/api.ts` — Typed fetch client (credentials: include)
+- `context/auth.tsx` — Auth context (session check on load)
+- `pages/login.tsx` — Login page
+- `pages/dashboard.tsx` — Plans dashboard with search + export
+- `pages/admin.tsx` — Admin panel: user management + data upload/clear
+- `pages/generate.tsx` — Generate Smart Team Plans (k-means clustering)
+- `lib/planning.ts` — Geographic clustering algorithm (k-means + nearest-neighbor)
+- `lib/export.ts` — Excel export (single plan + all plans)
+
+### Backend (`artifacts/api-server/src`)
+- `routes/auth.ts` — Login/logout/me (all from DB)
+- `routes/sites.ts` — Sites CRUD (bulk upload, list, clear — upload/clear admin only)
+- `routes/plans.ts` — Plans CRUD (role-filtered list, append, update, delete, clear)
+- `routes/users.ts` — Admin-only user management (admin protected from deletion)
+
+## Database Tables
+
+- `users` — username, password (plaintext), display_name, planner_name, role
+- `sites` — site_id, name, lat, lng, gov + many metadata fields
+- `plans` — client_id, team_name, planner_name, plan_name, day_groups (JSONB), site_ids
+- `user_sessions` — connect-pg-simple session store
+
+## Key Bugs Fixed
+
+- Session not persisting → `user_sessions` table created manually (connect-pg-simple can't find table.sql when bundled)
+- `createTableIfMissing: true` removed from session config
+- `confirm()` dialogs blocked in Replit iframe → replaced with Dialog components
+- Duplicate `sites` key in api.ts → removed
+- TypeScript null index error in generate.tsx → non-null assertion added
+
+## Deployment
+
+See `deploy/DEPLOY.md` for full Ubuntu Server deployment guide.
+
+Files in `deploy/`:
+- `setup.sql` — DB schema + admin seed
+- `.env.example` — environment variables template
+- `nginx.conf` — Nginx reverse proxy config
+- `docker-compose.yml` — Docker Compose alternative
+- `Dockerfile.api` — API container
+- `Dockerfile.web` — Frontend static container
 
 ## Key Commands
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
-
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+```bash
+pnpm --filter @workspace/api-server run dev   # start API server
+pnpm --filter @workspace/zroute run dev       # start frontend
+pnpm --filter @workspace/zroute exec tsc --noEmit  # typecheck frontend
+pnpm --filter @workspace/db run push          # push DB schema (dev only)
+```
