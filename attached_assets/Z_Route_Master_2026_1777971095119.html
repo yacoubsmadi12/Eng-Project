@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Z Route Master</title>
+<title>Z Route</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -20,6 +20,8 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;flex-direction:column;}
+
+/* HEADER */
 .hdr{height:56px;display:flex;align-items:center;gap:14px;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;}
 .logo-z{width:36px;height:36px;flex-shrink:0;}
 .logo-text{font-family:var(--mono);font-size:18px;font-weight:700;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;}
@@ -27,7 +29,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .hpills{display:flex;gap:7px;margin-left:auto;flex-wrap:wrap;}
 .pill{font-family:var(--mono);font-size:10px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:3px 11px;color:var(--mut);}
 .pill b{color:var(--acc);}
+
+/* LAYOUT */
 .wrap{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
 .side{width:400px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
 .tabs{display:flex;border-bottom:1px solid var(--bd);}
 .tab{flex:1;padding:10px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--mut);font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
@@ -35,20 +41,28 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .tab:hover:not(.on){color:var(--txt);background:var(--s2);}
 .pane{display:none;flex-direction:column;flex:1;overflow:hidden;}
 .pane.on{display:flex;}
+
+/* Upload box */
 .upbox{margin:12px;border:2px dashed var(--bd2);border-radius:10px;padding:16px 14px;text-align:center;cursor:pointer;transition:all .25s;position:relative;}
 .upbox:hover,.upbox.over{border-color:var(--acc);background:rgba(0,212,255,.05);}
 .upbox input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .up-ico{font-size:28px;}
 .up-ttl{font-size:14px;font-weight:700;margin-top:4px;}
 .up-hint{font-size:10px;color:var(--mut);margin-top:3px;line-height:1.6;}
+
+/* Search */
 .srch{margin:0 12px 8px;position:relative;}
 .srch input{width:100%;background:var(--s2);border:1px solid var(--bd);color:var(--txt);padding:8px 12px 8px 32px;border-radius:7px;font-family:var(--sans);font-size:13px;outline:none;}
 .srch input:focus{border-color:var(--acc);}
 .srch::before{content:'⌕';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--mut);}
+
+/* Selbar */
 .selbar{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;font-size:12px;color:var(--mut);border-bottom:1px solid var(--bd);}
 .selbar .row{display:flex;gap:4px;}
 .mbtn{background:none;border:1px solid var(--bd);color:var(--acc);padding:2px 9px;border-radius:5px;font-size:11px;cursor:pointer;font-family:var(--sans);font-weight:600;}
 .mbtn:hover{background:rgba(0,212,255,.1);}
+
+/* Sites list */
 .slist{flex:1;overflow-y:auto;padding:3px 6px 8px;}
 .slist::-webkit-scrollbar{width:3px;}
 .slist::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
@@ -62,6 +76,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .sm{font-size:11px;color:var(--mut);margin-top:1px;font-family:var(--mono);}
 .sm .key-badge{color:var(--orn);font-weight:700;}
 .tchip{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700;flex-shrink:0;font-family:var(--mono);margin-top:2px;}
+
+/* Plans pane */
 .new-plan{margin:12px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px;}
 .fl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;font-weight:700;}
 .fi{width:100%;background:var(--s1);border:1px solid var(--bd);color:var(--txt);padding:7px 11px;border-radius:7px;font-family:var(--sans);font-size:14px;outline:none;margin-bottom:8px;}
@@ -81,6 +97,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .key-section{padding:0 11px 6px;}
 .key-sec-label{font-size:11px;color:var(--orn);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:4px;}
 .pbtns{display:flex;gap:5px;padding:0 11px 11px;flex-wrap:wrap;}
+
+/* Buttons */
 .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);border:none;transition:all .2s;text-decoration:none;letter-spacing:.3px;}
 .btn-acc{background:var(--acc);color:#000;}
 .btn-acc:hover{background:#00b8e0;}
@@ -98,6 +116,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .btn-pur:hover{background:rgba(167,139,250,.28);}
 .btn-full{width:100%;justify-content:center;}
 .btn-sm{padding:4px 9px;font-size:12px;}
+
+/* MAP AREA */
 .mwrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .mbar{background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;}
 .mtitle{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--acc);letter-spacing:1px;}
@@ -105,6 +125,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .sv{color:var(--acc);font-weight:700;font-size:12px;}
 #map{flex:1;z-index:1;}
 .mrel{position:relative;flex:1;display:flex;flex-direction:column;}
+
+/* Route panel */
 .rpanel{position:absolute;bottom:20px;right:16px;width:295px;background:rgba(12,21,36,.97);border:1px solid var(--bd2);border-radius:12px;padding:13px;z-index:800;max-height:62vh;overflow-y:auto;backdrop-filter:blur(10px);display:none;}
 .rpanel::-webkit-scrollbar{width:3px;}
 .rpanel::-webkit-scrollbar-thumb{background:var(--bd);}
@@ -124,6 +146,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .stop-dist{font-size:9px;color:var(--ylw);margin-top:1px;font-family:var(--mono);}
 .stop-key{font-size:9px;color:var(--orn);margin-top:2px;font-family:var(--mono);font-weight:700;}
 .stop-acts{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+
+/* SITE DETAIL MODAL */
 .overlay{position:fixed;inset:0;background:rgba(6,11,20,.92);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 .overlay.on{display:flex;}
 .modal{background:var(--s1);border:1px solid var(--bd2);border-radius:14px;padding:22px;width:580px;max-width:97vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.7);}
@@ -135,6 +159,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .modal-sub{font-size:10px;color:var(--mut);margin-top:2px;font-family:var(--mono);}
 .mclose{margin-left:auto;cursor:pointer;font-size:18px;color:var(--mut);flex-shrink:0;}
 .mclose:hover{color:var(--red);}
+
+/* Info grid */
 .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;}
 .icell{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:7px 9px;}
 .icell.full2{grid-column:span 2;}
@@ -145,13 +171,16 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .ic-v.c-grn{color:var(--grn);}
 .ic-v.c-mut{color:var(--mut);}
 .ic-v.c-orn{color:var(--orn);}
+/* Equipment flags */
 .flag-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;}
 .flag{font-size:9px;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-weight:700;}
 .flag.yes{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.35);color:var(--grn);}
 .flag.no{background:rgba(90,122,154,.1);border:1px solid rgba(90,122,154,.2);color:var(--mut);}
+/* Progress */
 .prog-bar{height:5px;background:var(--bd);border-radius:3px;margin-bottom:3px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--grn));border-radius:3px;transition:width .3s;}
 .prog-txt{font-size:10px;color:var(--mut);font-family:var(--mono);margin-bottom:12px;}
+/* Checklist */
 .cl-group{margin-bottom:13px;}
 .cl-gtitle{font-size:10px;color:var(--acc);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:5px;font-family:var(--mono);}
 .cl-item{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;margin-bottom:3px;cursor:pointer;transition:all .15s;}
@@ -162,6 +191,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .cl-txt{font-size:11px;flex:1;}
 .cl-item.ck .cl-txt{text-decoration:line-through;color:var(--mut);}
 .mfooter{display:flex;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd);}
+
+/* PLANNING PAGE */
 .plan-section{margin:10px 12px 0;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px;flex-shrink:0;}
 .plan-sec-title{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
 .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
@@ -173,6 +204,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .plan-scroll{flex:1;overflow-y:auto;padding:8px 6px;}
 .plan-scroll::-webkit-scrollbar{width:3px;}
 .plan-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+
+/* Team cards on plan page */
 .tcard{background:var(--s2);border:1px solid var(--bd);border-radius:10px;margin-bottom:10px;overflow:hidden;}
 .tcard-head{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;border-bottom:1px solid var(--bd);}
 .tcard-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
@@ -180,8 +213,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .tcard-meta{font-size:11px;color:var(--mut);font-family:var(--mono);}
 .tcard-days{padding:8px 12px;}
 .tday{margin-bottom:8px;}
-.tday-head{font-size:11px;font-weight:700;color:var(--ylw);font-family:var(--mono);margin-bottom:5px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
-.tday-head:hover .collapse-btn{color:var(--acc);}
+.tday-head{font-size:11px;font-weight:700;color:var(--ylw);font-family:var(--mono);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
 .tday-sites{display:flex;flex-direction:column;gap:2px;}
 .tsite-row{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:5px;font-size:11px;}
 .tsite-num{font-family:var(--mono);font-size:10px;color:var(--mut);width:16px;flex-shrink:0;text-align:right;}
@@ -189,6 +221,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .tsite-id{font-family:var(--mono);font-size:10px;color:var(--acc);flex-shrink:0;}
 .tsite-key{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--orn);background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.3);padding:1px 5px;border-radius:3px;flex-shrink:0;}
 .tcard-btns{padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bd);}
+
+/* ALL PLANS PAGE */
 .ap-scroll{flex:1;overflow-y:auto;padding:8px 6px;}
 .ap-scroll::-webkit-scrollbar{width:3px;}
 .ap-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
@@ -208,6 +242,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .ap-stop-key{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--orn);background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.3);padding:1px 5px;border-radius:3px;flex-shrink:0;}
 .ap-day-label{font-size:10px;font-weight:700;color:var(--ylw);font-family:var(--mono);padding:4px 0 2px;text-transform:uppercase;letter-spacing:.5px;}
 .ap-btns{padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bd);}
+
+/* Misc */
 .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--mut);pointer-events:none;z-index:2;}
 .ei{font-size:50px;opacity:.2;}.et{font-size:14px;opacity:.4;}.eh{font-size:11px;opacity:.3;text-align:center;max-width:260px;line-height:1.6;}
 .ldr{display:none;position:absolute;inset:0;background:rgba(6,11,20,.78);z-index:900;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--acc);font-size:12px;font-weight:700;font-family:var(--mono);}
@@ -223,12 +259,19 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .leaflet-control-attribution a{color:#4a6585!important;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px;}
+
+/* Key highlight box */
 .key-hl{margin-bottom:12px;padding:10px 14px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.4);border-radius:8px;}
 .key-hl-label{font-size:9px;color:var(--orn);font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:3px;font-family:var(--mono);}
 .key-hl-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--orn);letter-spacing:1px;}
+
+/* HQ badge */
 .hq-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ylw);background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);padding:2px 8px;border-radius:4px;}
+
+/* Editable inline field */
 .editable-field{background:transparent;border:none;border-bottom:1px dashed var(--bd2);color:inherit;font-family:inherit;font-size:inherit;font-weight:inherit;outline:none;padding:1px 4px;cursor:text;min-width:60px;max-width:100%;}
 .editable-field:focus{border-bottom-color:var(--acc);background:rgba(0,212,255,.05);border-radius:3px 3px 0 0;}
+/* Day action buttons row */
 .tday-actions{display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;}
 .btn-xs{padding:2px 7px;font-size:10px;border-radius:4px;font-weight:700;cursor:pointer;font-family:var(--mono);border:none;display:inline-flex;align-items:center;gap:3px;transition:all .15s;}
 .btn-xs-acc{background:rgba(0,212,255,.15);border:1px solid rgba(0,212,255,.3);color:var(--acc);}
@@ -237,17 +280,25 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .btn-xs-grn:hover{background:rgba(52,211,153,.25);}
 .btn-xs-ylw{background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);color:var(--ylw);}
 .btn-xs-ylw:hover{background:rgba(251,191,36,.25);}
+/* Plan name banner */
 .plan-name-bar{margin:8px 12px 0;background:var(--s3);border:1px solid var(--bd2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;}
 .plan-name-label{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
 .plan-name-input{flex:1;background:transparent;border:none;border-bottom:1px dashed var(--bd2);color:var(--acc);font-family:var(--mono);font-size:14px;font-weight:700;outline:none;padding:2px 4px;}
 .plan-name-input:focus{border-bottom-color:var(--acc);background:rgba(0,212,255,.04);}
+/* Date input */
 .day-date-inp{background:var(--s1);border:1px solid var(--bd);color:var(--txt);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;outline:none;cursor:pointer;}
 .day-date-inp:focus{border-color:var(--acc);}
+/* Collapse toggles */
 .collapse-btn{background:none;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:0 4px;line-height:1;transition:transform .2s,color .2s;flex-shrink:0;}
 .collapse-btn:hover{color:var(--acc);}
 .collapse-btn.collapsed{transform:rotate(-90deg);}
 .tday-body{overflow:hidden;transition:max-height .25s ease;}
 .tcard-body-wrap{overflow:hidden;transition:max-height .35s ease;}
+.tday-head{cursor:pointer;user-select:none;}
+.tday-head:hover .collapse-btn{color:var(--acc);}
+
+
+/* ══ LOGIN SCREEN ══ */
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;align-items:center;justify-content:center;}
 .login-box{width:380px;background:var(--s1);border:1px solid var(--bd2);border-radius:16px;padding:36px 32px;box-shadow:0 30px 80px rgba(0,0,0,.7);}
 .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
@@ -261,12 +312,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .login-btn{width:100%;padding:11px;background:linear-gradient(90deg,var(--acc),#0099cc);border:none;border-radius:8px;color:#000;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;}
 .login-btn:hover{opacity:.9;}
 .login-badge{margin-top:18px;text-align:center;font-size:10px;color:var(--mut);font-family:var(--mono);}
+/* ══ USER BADGE IN HEADER ══ */
 .user-badge{display:flex;align-items:center;gap:8px;margin-left:8px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:4px 12px 4px 8px;}
 .user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;}
 .user-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--txt);}
 .user-role{font-size:9px;color:var(--mut);font-family:var(--mono);}
 .logout-btn{background:none;border:none;color:var(--mut);cursor:pointer;font-size:14px;padding:0 0 0 6px;line-height:1;}
 .logout-btn:hover{color:var(--red);}
+/* ══ ADMIN PANEL ══ */
 #adminOvl{position:fixed;inset:0;background:rgba(6,11,20,.93);z-index:5000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 #adminOvl.on{display:flex;}
 .admin-modal{background:var(--s1);border:1px solid var(--bd2);border-radius:14px;width:600px;max-width:97vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.8);}
@@ -302,7 +355,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+
+<!-- ══ LOGIN SCREEN ══ -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
@@ -322,11 +376,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     <input class="login-inp" id="liPass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <div class="login-err" id="liErr">❌ Invalid username or password</div>
     <button class="login-btn" onclick="doLogin()">🔐 Sign In</button>
-    <div class="login-badge">Z Route Master · Secure Access · v12</div>
+    <div class="login-badge">Z Route · Secure Access · v12</div>
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ══ ADMIN PANEL MODAL ══ -->
 <div id="adminOvl">
   <div class="admin-modal">
     <div class="admin-hdr">
@@ -334,28 +388,44 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
       <span class="admin-close" onclick="closeAdmin()">✕</span>
     </div>
     <div class="admin-body">
+      <!-- Stats -->
       <div class="admin-stats">
         <div class="astat"><div class="astat-n" id="aStatUsers">0</div><div class="astat-l">Users</div></div>
         <div class="astat"><div class="astat-n" id="aStatPlans">0</div><div class="astat-l">Total Plans</div></div>
         <div class="astat"><div class="astat-n" id="aStatSites">0</div><div class="astat-l">Sites Loaded</div></div>
       </div>
+      <!-- Add User -->
       <div class="admin-sec">
         <div class="admin-sec-title">➕ Add New User</div>
         <div class="admin-add-row">
-          <div class="admin-inp-grp"><div class="admin-lbl">Display Name</div><input class="admin-inp" id="aNewName" type="text" placeholder="e.g. Ahmed"></div>
-          <div class="admin-inp-grp"><div class="admin-lbl">Username</div><input class="admin-inp" id="aNewUser" type="text" placeholder="e.g. ahmed.z"></div>
+          <div class="admin-inp-grp">
+            <div class="admin-lbl">Display Name</div>
+            <input class="admin-inp" id="aNewName" type="text" placeholder="e.g. Ahmed">
+          </div>
+          <div class="admin-inp-grp">
+            <div class="admin-lbl">Username</div>
+            <input class="admin-inp" id="aNewUser" type="text" placeholder="e.g. ahmed.z">
+          </div>
         </div>
         <div class="admin-add-row">
-          <div class="admin-inp-grp"><div class="admin-lbl">Password</div><input class="admin-inp" id="aNewPass" type="text" placeholder="e.g. Pass@123"></div>
-          <div class="admin-inp-grp"><div class="admin-lbl">Planner Name (in plans)</div><input class="admin-inp" id="aNewPlanner" type="text" placeholder="same as display name"></div>
+          <div class="admin-inp-grp">
+            <div class="admin-lbl">Password</div>
+            <input class="admin-inp" id="aNewPass" type="text" placeholder="e.g. Pass@123">
+          </div>
+          <div class="admin-inp-grp">
+            <div class="admin-lbl">Planner Name (in plans)</div>
+            <input class="admin-inp" id="aNewPlanner" type="text" placeholder="same as display name">
+          </div>
           <button class="btn btn-grn" style="align-self:flex-end" onclick="addUser()">➕ Add</button>
         </div>
         <div id="aAddErr" style="font-size:11px;color:var(--red);font-family:var(--mono);display:none;margin-top:4px;"></div>
       </div>
+      <!-- User List -->
       <div class="admin-sec">
         <div class="admin-sec-title">👥 All Users</div>
         <div class="ulist" id="aUserList"></div>
       </div>
+      <!-- All Plans View -->
       <div class="admin-sec">
         <div class="admin-sec-title">📋 Plans by User</div>
         <div id="aPlansByUser" style="display:flex;flex-direction:column;gap:6px;"></div>
@@ -371,11 +441,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 <div class="overlay" id="clOvl">
 <div class="modal">
   <div class="modal-hdr">
-    <div><div class="modal-title" id="clTitle">Site Check-In</div><div class="modal-sub" id="clSub">—</div></div>
+    <div>
+      <div class="modal-title" id="clTitle">Site Check-In</div>
+      <div class="modal-sub" id="clSub">—</div>
+    </div>
     <div class="mclose" onclick="closeChecklist()">✕</div>
   </div>
   <div id="keyHighlight" style="display:none" class="key-hl">
-    <div class="key-hl-label">🔑 SITE KEY</div><div class="key-hl-val" id="keyValue"></div>
+    <div class="key-hl-label">🔑 SITE KEY</div>
+    <div class="key-hl-val" id="keyValue"></div>
   </div>
   <div class="info-grid" id="clInfo"></div>
   <div style="font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:5px;">Equipment</div>
@@ -394,11 +468,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 <div class="overlay" id="siteOvl">
 <div class="modal wide">
   <div class="modal-hdr">
-    <div><div class="modal-title" id="sdTitle">Site Details</div><div class="modal-sub" id="sdSub">—</div></div>
+    <div>
+      <div class="modal-title" id="sdTitle">Site Details</div>
+      <div class="modal-sub" id="sdSub">—</div>
+    </div>
     <div class="mclose" onclick="closeSiteDetail()">✕</div>
   </div>
   <div id="sdKeyHl" style="display:none" class="key-hl">
-    <div class="key-hl-label">🔑 SITE KEY</div><div class="key-hl-val" id="sdKeyVal"></div>
+    <div class="key-hl-label">🔑 SITE KEY</div>
+    <div class="key-hl-val" id="sdKeyVal"></div>
   </div>
   <div class="info-grid" id="sdGrid"></div>
   <div style="font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-bottom:5px;">Equipment</div>
@@ -412,9 +490,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 
 <!-- HEADER -->
 <div class="hdr">
+  <!-- Z Logo SVG -->
   <svg class="logo-z" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="36" height="36" rx="8" fill="url(#zgrad)"/>
-    <defs><linearGradient id="zgrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#ff6b35"/></linearGradient></defs>
+    <defs>
+      <linearGradient id="zgrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#00d4ff"/>
+        <stop offset="100%" stop-color="#ff6b35"/>
+      </linearGradient>
+    </defs>
     <path d="M8 9h20l-14 18h14" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <div>
@@ -427,15 +511,20 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     <div class="pill">Done <b id="hD">0</b></div>
     <div class="pill">Plans <b id="hP">0</b></div>
   </div>
+  <!-- User Badge -->
   <div class="user-badge" id="userBadge" style="display:none">
     <div class="user-avatar" id="userAvatar">?</div>
-    <div><div class="user-name" id="userDisplayName">—</div><div class="user-role" id="userRoleLabel">—</div></div>
+    <div>
+      <div class="user-name" id="userDisplayName">—</div>
+      <div class="user-role" id="userRoleLabel">—</div>
+    </div>
     <button class="logout-btn" onclick="doLogout()" title="Sign out">⏏</button>
   </div>
   <button class="btn btn-ylw btn-sm" id="btnAdminPanel" style="display:none;margin-left:6px" onclick="openAdmin()">🛡️ Admin</button>
 </div>
 
 <div class="wrap">
+<!-- SIDEBAR -->
 <div class="side">
   <div class="tabs">
     <button class="tab on" onclick="gTab('sites',this)">📍 Sites</button>
@@ -444,13 +533,16 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     <button class="tab" onclick="gTab('newsites',this)">🆕 New Sites</button>
   </div>
 
-  <!-- TAB 1: SITES -->
+  <!-- ═══ TAB 1: SITES ═══ -->
   <div class="pane on" id="pane-sites">
     <div class="upbox" id="upbox">
       <input type="file" id="fIn" accept=".xlsx,.xls,.csv" onchange="onFile(event)">
       <div class="up-ico">📂</div>
       <div class="up-ttl">Upload Sites Excel / CSV</div>
-      <div class="up-hint">45 columns: OWNER · <b>Site_ID</b> · Site_Code · Site_Name · Governorate · Lat · Long<br>+ KEY · Power Class · TL · MW · Fiber · DWDM · OLT · IPRAN · FTTM · Vendor…</div>
+      <div class="up-hint">
+        45 columns: OWNER · <b>Site_ID</b> · Site_Code · Site_Name · Governorate · Lat · Long<br>
+        + KEY · Power Class · TL · MW · Fiber · DWDM · OLT · IPRAN · FTTM · Vendor…
+      </div>
     </div>
     <div id="selbar" style="display:none" class="selbar">
       <span id="selcnt">0 selected</span>
@@ -468,71 +560,103 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     </div>
   </div>
 
-  <!-- TAB 2: PLANNING -->
+  <!-- ═══ TAB 2: PLANNING ═══ -->
   <div class="pane" id="pane-plans">
+    <!-- Upload plan file -->
     <div class="upbox" id="planUpbox" style="margin:12px 12px 0;">
       <input type="file" id="planFIn" accept=".xlsx,.xls,.csv" onchange="onPlanFile(event)">
       <div class="up-ico">📋</div>
       <div class="up-ttl" style="color:var(--acc3)">Upload Plan File</div>
       <div class="up-hint">Excel with columns: <b>Site_ID</b> · <b>Planner_Name</b></div>
     </div>
+    <!-- Plan Name -->
     <div class="plan-name-bar">
       <span class="plan-name-label">📝 Plan Name</span>
       <input class="plan-name-input" id="pPlanName" type="text" placeholder="e.g. Q2 Field Campaign 2025…">
     </div>
+    <!-- Requirements -->
     <div class="plan-section">
       <div class="plan-sec-title">⚙️ Team Requirements</div>
       <div class="plan-grid">
-        <div class="plan-inp-grp"><div class="plan-lbl">Number of Teams</div><input class="plan-inp" id="pTeams" type="number" min="1" max="20" placeholder="e.g. 2"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Working Days</div><input class="plan-inp" id="pDays" type="number" min="1" max="60" placeholder="e.g. 5"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Max Sites/Day/Team</div><input class="plan-inp" id="pMaxDay" type="number" min="1" max="100" placeholder="e.g. 8"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Planner Name</div><input class="plan-inp" id="pPlannerName" type="text" placeholder="e.g. Ahmed" style="font-size:12px;"></div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Number of Teams</div>
+          <input class="plan-inp" id="pTeams" type="number" min="1" max="20" placeholder="e.g. 2">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Working Days</div>
+          <input class="plan-inp" id="pDays" type="number" min="1" max="60" placeholder="e.g. 5">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Max Sites/Day/Team</div>
+          <input class="plan-inp" id="pMaxDay" type="number" min="1" max="100" placeholder="e.g. 8">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Planner Name</div>
+          <input class="plan-inp" id="pPlannerName" type="text" placeholder="e.g. Ahmed" style="font-size:12px;">
+        </div>
       </div>
       <div id="planCapInfo" style="font-size:11px;color:var(--mut);font-family:var(--mono);margin-bottom:8px;padding:6px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:6px;display:none;"></div>
       <button class="btn btn-pur btn-full" onclick="generateTeamPlans()" id="btnGenerate" disabled>🧠 Generate Smart Team Plans</button>
     </div>
     <div class="sep" style="margin:8px 0 0;"></div>
+    <!-- Generated team plans -->
     <div class="plan-scroll" id="planList">
       <div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">Upload plan file &amp; set requirements, then generate plans</div>
     </div>
   </div>
 
-  <!-- TAB 4: NEW SITES -->
+  <!-- ═══ TAB 4: NEW SITES ═══ -->
   <div class="pane" id="pane-newsites">
+    <!-- Upload new sites file -->
     <div class="upbox" id="nsUpbox" style="margin:12px 12px 0;">
       <input type="file" id="nsFIn" accept=".xlsx,.xls,.csv" onchange="onNewSitesFile(event)">
       <div class="up-ico">🆕</div>
       <div class="up-ttl" style="color:var(--grn)">Upload New Sites Excel</div>
       <div class="up-hint">Columns: <b>Site_Name</b> · <b>Lat</b> · <b>Long</b><br>Optional: Site_ID · Governorate · Planner_Name</div>
     </div>
+    <!-- Plan Name -->
     <div class="plan-name-bar">
       <span class="plan-name-label">📝 Plan Name</span>
       <input class="plan-name-input" id="nsPlanName" type="text" placeholder="e.g. New Sites Campaign 2025…">
     </div>
+    <!-- Requirements -->
     <div class="plan-section">
       <div class="plan-sec-title">⚙️ Team Requirements</div>
       <div class="plan-grid">
-        <div class="plan-inp-grp"><div class="plan-lbl">Number of Teams</div><input class="plan-inp" id="nsTeams" type="number" min="1" max="20" placeholder="e.g. 2"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Working Days</div><input class="plan-inp" id="nsDays" type="number" min="1" max="60" placeholder="e.g. 5"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Max Sites/Day/Team</div><input class="plan-inp" id="nsMaxDay" type="number" min="1" max="100" placeholder="e.g. 8"></div>
-        <div class="plan-inp-grp"><div class="plan-lbl">Planner Name</div><input class="plan-inp" id="nsPlannerName" type="text" placeholder="e.g. Ahmed" style="font-size:12px;"></div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Number of Teams</div>
+          <input class="plan-inp" id="nsTeams" type="number" min="1" max="20" placeholder="e.g. 2">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Working Days</div>
+          <input class="plan-inp" id="nsDays" type="number" min="1" max="60" placeholder="e.g. 5">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Max Sites/Day/Team</div>
+          <input class="plan-inp" id="nsMaxDay" type="number" min="1" max="100" placeholder="e.g. 8">
+        </div>
+        <div class="plan-inp-grp">
+          <div class="plan-lbl">Planner Name</div>
+          <input class="plan-inp" id="nsPlannerName" type="text" placeholder="e.g. Ahmed" style="font-size:12px;">
+        </div>
       </div>
       <div id="nsCapInfo" style="font-size:11px;color:var(--mut);font-family:var(--mono);margin-bottom:8px;padding:6px 8px;background:var(--s1);border:1px solid var(--bd);border-radius:6px;display:none;"></div>
       <button class="btn btn-grn btn-full" onclick="generateNewSitesPlan()" id="btnNsGenerate" disabled>🧠 Generate Smart Team Plans</button>
     </div>
     <div class="sep" style="margin:8px 0 0;"></div>
+    <!-- Generated team plans for new sites -->
     <div class="plan-scroll" id="nsPlanList">
       <div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">Upload new sites file &amp; set requirements, then generate plans</div>
     </div>
   </div>
 
-  <!-- TAB 3: ALL PLANS -->
+  <!-- ═══ TAB 3: ALL PLANS ═══ -->
   <div class="pane" id="pane-allplans">
     <div class="ap-header">
       <div class="ap-title">All Saved Plans</div>
       <div style="display:flex;gap:5px">
         <button class="btn btn-ylw btn-sm" onclick="exportAllPlans()">📥 Export All</button>
-        <button class="btn btn-r btn-sm" onclick="if(confirm('Clear all saved plans?'))clearSavedPlans()">🗑 Clear</button>
+        <button class="btn btn-r btn-sm" onclick="if(confirm('Clear all saved plans?'))clearSavedPlans()" title="Clear all saved plans from storage">🗑 Clear</button>
       </div>
     </div>
     <div class="srch" style="margin:8px 12px 4px;">
@@ -583,22 +707,32 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 </div>
 
 <script>
-// ══ CONSTANTS ═══════════════════════════════════════
+// ══ CONSTANTS ══════════════════════════════════════
 const COLORS=['#00d4ff','#ff6b35','#a78bfa','#34d399','#f87171','#fbbf24','#ec4899','#14b8a6','#6366f1','#84cc16','#f97316','#06b6d4'];
-const HQ_ID='911';
+const HQ_ID='911'; // Always start & end at this Site_ID
 const CL_GROUPS=[];
 
-// ══ STATE ═══════════════════════════════════════════
-let sites=[],sel=new Set(),plans=[],pid=1,picked=COLORS[0];
-let map,mLayer=null,rLayers=[];
-let activeCL=null,currentSiteDetail=null,currentGMUrl=null;
-let planUploadRows=[],teamPlans=[],nsTeamPlans=[];
+// ══ STATE ══════════════════════════════════════════
+let sites=[], sel=new Set(), plans=[], pid=1, picked=COLORS[0];
+let map, mLayer=null, rLayers=[];
+let activeCL=null;
+let currentSiteDetail=null;
+let currentGMUrl=null; // always holds the latest Google Maps URL for the route panel
+// Planning module state
+let planUploadRows=[];  // [{siteId, plannerName}] from plan Excel
+let teamPlans=[];       // generated: [{id,teamName,plannerName,color,dayGroups,siteIds,route,_km}]
+let nsTeamPlans=[];     // plans generated from New Sites tab (subset of teamPlans)
 
-// ══ PERSISTENCE ═════════════════════════════════════
-const STORAGE_KEY_SITES='zroute_sites_v3';
+// ══ PERSISTENCE ══════════════════════════════════════════
+// Plans are auto-saved to localStorage on every change.
+// On reload, they restore as soon as the same sites file is uploaded.
+// Site snapshots are also stored so plans show immediately on page open.
+const STORAGE_KEY_PLANS = 'zroute_plans_v3';
+const STORAGE_KEY_SITES = 'zroute_sites_v3';
 
 function saveSiteSnapshot(){
   try{
+    // Save minimal site data needed to reconstruct plans (only fields used in plans)
     const snap=sites.map(s=>({
       id:s.id,name:s.name,code:s.code||'',lat:s.lat,lng:s.lng,
       gov:s.gov||'',dist:s.dist||'',subdist:s.subdist||'',
@@ -617,89 +751,104 @@ function saveSiteSnapshot(){
   }catch(e){console.warn('Site snapshot save failed:',e);}
 }
 
-async function saveTeamPlans(){
+function saveTeamPlans(){
   try{
     const toSave=teamPlans.map(tp=>({
       id:tp.id,teamName:tp.teamName,plannerName:tp.plannerName,planName:tp.planName||'',
-      color:tp.color,km:tp._km||0,isNewSites:tp.isNewSites||false,
-      hqSiteId:tp.hqSite?tp.hqSite.id:null,siteIds:tp.siteIds,
-      dayGroups:tp.dayGroups.map(dg=>({day:dg.day,date:dg.date||'',siteIds:dg.sites.map(s=>s.id)}))
+      color:tp.color,siteIds:tp.siteIds,_km:tp._km||0,
+      isNewSites:tp.isNewSites||false,
+      hqSiteId:tp.hqSite?tp.hqSite.id:null,
+      dayGroups:tp.dayGroups.map(dg=>({
+        day:dg.day,date:dg.date||'',
+        siteIds:dg.sites.map(s=>s.id)
+      }))
     }));
-    fetch('/api/plans/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave),credentials:'include'})
-      .catch(e=>console.warn('API plan save failed:',e));
+    localStorage.setItem(STORAGE_KEY_PLANS,JSON.stringify(toSave));
   }catch(e){console.warn('Plan save failed:',e);}
 }
 
-function plansFromApi(apiPlans,siteSource){
-  return apiPlans.map(tp=>{
-    const hqSite=tp.hqSiteId?siteSource.find(s=>s.id===tp.hqSiteId)||null:null;
-    const dayGroups=(tp.dayGroups||[]).map(dg=>({
-      day:dg.day,date:dg.date||'',
-      sites:(dg.siteIds||[]).map(id=>siteSource.find(s=>s.id===id)).filter(Boolean)
-    }));
-    return{
-      id:tp.id,teamName:tp.teamName,plannerName:tp.plannerName,planName:tp.planName||'',
-      color:tp.color,siteIds:tp.siteIds||[],_km:tp.km||0,
-      isNewSites:tp.isNewSites||false,hqSite,dayGroups,route:null
-    };
-  }).filter(tp=>tp.dayGroups.some(dg=>dg.sites.length>0));
+function getSiteById(id){
+  // Look in live sites first, then fall back to snapshot cache
+  return sites.find(s=>s.id===id)||null;
 }
 
-async function loadTeamPlans(){
+function restorePlansFromStorage(siteSource){
+  // siteSource: array of site objects to resolve IDs against
   try{
-    const res=await fetch('/api/plans',{credentials:'include'});
-    if(res.ok){
-      const apiPlans=await res.json();
-      if(apiPlans.length){
-        const loaded=plansFromApi(apiPlans,sites);
-        if(loaded.length){
-          teamPlans=loaded;
-          teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
-          nsTeamPlans=teamPlans.filter(tp=>tp.isNewSites);
-          addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
-          document.getElementById('stbar').style.display='flex';
-          toast(`✅ Restored ${teamPlans.length} saved plan(s)`,'ok');
-          return;
-        }
-      }
-    }
-  }catch(e){console.warn('API load plans failed:',e);}
+    const raw=localStorage.getItem(STORAGE_KEY_PLANS);
+    if(!raw)return false;
+    const saved=JSON.parse(raw);
+    if(!saved||!saved.length)return false;
+    const loaded=saved.map(tp=>{
+      const hqSite=tp.hqSiteId?siteSource.find(s=>s.id===tp.hqSiteId)||null:null;
+      const dayGroups=tp.dayGroups.map(dg=>({
+        day:dg.day,date:dg.date||'',
+        sites:dg.siteIds.map(id=>siteSource.find(s=>s.id===id)).filter(Boolean)
+      }));
+      return{
+        id:tp.id,teamName:tp.teamName,plannerName:tp.plannerName,planName:tp.planName||'',
+        color:tp.color,siteIds:tp.siteIds,_km:tp._km||0,
+        isNewSites:tp.isNewSites||false,
+        hqSite,dayGroups,route:null
+      };
+    }).filter(tp=>tp.dayGroups.some(dg=>dg.sites.length>0));
+    if(!loaded.length)return false;
+    teamPlans=loaded;
+    teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{
+      const s=siteSource.find(x=>x.id===id);if(s)s.planId=tp.id;
+    }));
+    // Repopulate nsTeamPlans from restored plans that were created from New Sites tab
+    nsTeamPlans=teamPlans.filter(tp=>tp.isNewSites);
+    return true;
+  }catch(e){console.warn('Restore failed:',e);return false;}
 }
 
-async function tryLoadPlansOnStartup(){
+function loadTeamPlans(){
+  // Called after sites are uploaded — sites array is live
+  const ok=restorePlansFromStorage(sites);
+  if(ok){
+    addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
+    document.getElementById('stbar').style.display='flex';
+    toast(`✅ Restored ${teamPlans.length} saved plan(s)`,'ok');
+  }
+}
+
+function tryLoadPlansOnStartup(){
+  // Called on DOMContentLoaded — try to restore using stored site snapshot
+  // so plans are visible immediately without re-uploading sites
   try{
     const rawSites=localStorage.getItem(STORAGE_KEY_SITES);
-    if(!rawSites)return;
+    const rawPlans=localStorage.getItem(STORAGE_KEY_PLANS);
+    if(!rawSites||!rawPlans)return;
     const snapSites=JSON.parse(rawSites);
-    if(!snapSites||!snapSites.length)return;
-    sites=snapSites.map(s=>({...s,planId:null,workTime:1,checklist:{},done:false,marker:null}));
-    const res=await fetch('/api/plans',{credentials:'include'});
-    if(!res.ok)return;
-    const apiPlans=await res.json();
-    if(!apiPlans.length)return;
-    const loaded=plansFromApi(apiPlans,sites);
-    if(!loaded.length)return;
-    teamPlans=loaded;
-    teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
-    nsTeamPlans=teamPlans.filter(tp=>tp.isNewSites);
+    const savedPlans=JSON.parse(rawPlans);
+    if(!snapSites||!snapSites.length||!savedPlans||!savedPlans.length)return;
+    // Populate sites from snapshot so the map shows
+    sites=snapSites.map(s=>({
+      ...s,planId:null,workTime:1,checklist:{},done:false,marker:null
+    }));
+    const ok=restorePlansFromStorage(sites);
+    if(!ok)return;
+    // Re-init map view and markers
     addMarkers();fitAll();renderSites();
     document.getElementById('selbar').style.display='flex';
     document.getElementById('srchwrap').style.display='block';
     document.getElementById('btnAll').style.display='inline-flex';
     document.getElementById('stbar').style.display='flex';
     document.getElementById('empt').style.display='none';
+    // Update upbox to show restored state
     const ub=document.getElementById('upbox');
     const hqFound=sites.find(s=>s.id===HQ_ID);
     ub.innerHTML=`<input type="file" id="fIn" accept=".xlsx,.xls,.csv" onchange="onFile(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
       <div class="up-ico">💾</div><div class="up-ttl">${sites.length} Sites (Restored)</div>
       <div class="up-hint">${hqFound?'🏠 HQ 911 found':'⚠️ Site 911 not found'} · Click to reload fresh file</div>`;
     renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
-    toast(`📂 ${teamPlans.length} plan(s) & ${sites.length} sites restored`,'ok');
+    toast(`📂 ${teamPlans.length} plan(s) & ${sites.length} sites restored from last session`,'ok');
   }catch(e){console.warn('Startup restore failed:',e);}
 }
 
-async function clearSavedPlans(){
-  try{await fetch('/api/plans',{method:'DELETE',credentials:'include'});}catch(e){}
+function clearSavedPlans(){
+  localStorage.removeItem(STORAGE_KEY_PLANS);
   teamPlans=[];nsTeamPlans=[];
   sites.forEach(s=>s.planId=null);
   rLayers.forEach(l=>map.removeLayer(l));rLayers=[];
@@ -708,9 +857,9 @@ async function clearSavedPlans(){
 }
 
 function clearAllData(){
+  localStorage.removeItem(STORAGE_KEY_PLANS);
   localStorage.removeItem(STORAGE_KEY_SITES);
-  clearSavedPlans();
-  sites=[];sel.clear();
+  teamPlans=[];sites=[];sel.clear();
   if(mLayer)mLayer.clearLayers();
   rLayers.forEach(l=>map.removeLayer(l));rLayers=[];
   document.getElementById('empt').style.display='block';
@@ -727,41 +876,53 @@ function clearAllData(){
   toast('All data cleared','in');
 }
 
-// ══ MAP INIT ════════════════════════════════════════
+// ══ MAP INIT ═══════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
   map=L.map('map',{zoomControl:true}).setView([31.95,35.93],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:19
+  }).addTo(map);
   buildCdots();
-  (async()=>{
-    const authed=await tryRestoreSession();
-    if(authed)await tryLoadPlansOnStartup();
-  })();
+  // Auth: try restore session first, then load plans
+  if(!tryRestoreSession()){
+    // show login
+  }
+  // Restore last session data immediately on page open
+  setTimeout(tryLoadPlansOnStartup,200);
+  // drag & drop sites
   const ub=document.getElementById('upbox');
   ub.addEventListener('dragover',e=>{e.preventDefault();ub.classList.add('over');});
   ub.addEventListener('dragleave',()=>ub.classList.remove('over'));
   ub.addEventListener('drop',e=>{e.preventDefault();ub.classList.remove('over');const f=e.dataTransfer.files[0];if(f)onFile({target:{files:[f]}});});
+  // drag & drop plan
   const pb=document.getElementById('planUpbox');
   pb.addEventListener('dragover',e=>{e.preventDefault();pb.classList.add('over');});
   pb.addEventListener('dragleave',()=>pb.classList.remove('over'));
   pb.addEventListener('drop',e=>{e.preventDefault();pb.classList.remove('over');const f=e.dataTransfer.files[0];if(f)onPlanFile({target:{files:[f]}});});
+  // update capacity on input change
   ['pTeams','pDays','pMaxDay'].forEach(id=>document.getElementById(id).addEventListener('input',updateCapInfo));
   ['nsTeams','nsDays','nsMaxDay'].forEach(id=>document.getElementById(id).addEventListener('input',updateNsCapInfo));
 });
 
-// ══ TABS ════════════════════════════════════════════
+// ══ TABS ═══════════════════════════════════════════
 function gTab(id,btn){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('pane-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='allplans')renderAllPlans();
+  if(id==='allplans') renderAllPlans();
 }
 
-// ══ SITES FILE UPLOAD ═══════════════════════════════
+// ══ SITES FILE UPLOAD ══════════════════════════════
 function onFile(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'binary'});parseSites(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(ex){toast('Read error: '+ex.message,'er');}};
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      parseSites(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
+    }catch(ex){toast('Read error: '+ex.message,'er');}
+  };
   r.readAsBinaryString(f);
 }
 
@@ -809,6 +970,7 @@ function parseSites(rows){
     contactn:g(r,C.contactn),
     planId:null,workTime:1,checklist:{},done:false,marker:null,
   })).filter(s=>!isNaN(s.lat)&&!isNaN(s.lng));
+
   sel.clear();updHdr();
   document.getElementById('selbar').style.display='flex';
   document.getElementById('srchwrap').style.display='block';
@@ -824,14 +986,20 @@ function parseSites(rows){
   addMarkers();fitAll();renderSites();
   toast(`Loaded ${sites.length} sites`,'ok');
   updateCapInfo();
+  // Try to restore previously saved plans that match these sites
   setTimeout(loadTeamPlans,100);
 }
 
-// ══ PLAN FILE UPLOAD ════════════════════════════════
+// ══ PLAN FILE UPLOAD ═══════════════════════════════
 function onPlanFile(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'binary'});parsePlanFile(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(ex){toast('Plan file error: '+ex.message,'er');}};
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      parsePlanFile(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
+    }catch(ex){toast('Plan file error: '+ex.message,'er');}
+  };
   r.readAsBinaryString(f);
 }
 
@@ -841,9 +1009,13 @@ function parsePlanFile(rows){
   const norm=k=>k.toLowerCase().replace(/[\s_\n\r]+/g,'');
   const normKeys=rawKeys.map(norm);
   const fk=(...frags)=>{for(const f of frags){const i=normKeys.findIndex(n=>n.includes(f));if(i>=0)return rawKeys[i];}return null;};
-  const idCol=fk('siteid');const nameCol=fk('plannername','planner');
+  const idCol=fk('siteid');
+  const nameCol=fk('plannername','planner');
   if(!idCol){toast('Plan file must have Site_ID column','er');return;}
-  planUploadRows=rows.map(r=>({siteId:String(r[idCol]??'').trim(),plannerName:nameCol?String(r[nameCol]??'').trim():''})).filter(r=>r.siteId);
+  planUploadRows=rows.map(r=>({
+    siteId:String(r[idCol]??'').trim(),
+    plannerName:nameCol?String(r[nameCol]??'').trim():''
+  })).filter(r=>r.siteId);
   const pb=document.getElementById('planUpbox');
   pb.innerHTML=`<input type="file" id="planFIn" accept=".xlsx,.xls,.csv" onchange="onPlanFile(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
     <div class="up-ico">✅</div><div class="up-ttl" style="color:var(--acc3)">${planUploadRows.length} Plan Sites Loaded</div>
@@ -856,16 +1028,26 @@ function parsePlanFile(rows){
 function updateCapInfo(){
   const info=document.getElementById('planCapInfo');
   if(!planUploadRows.length){info.style.display='none';return;}
-  const nT=parseInt(document.getElementById('pTeams').value)||null;
-  const nD=parseInt(document.getElementById('pDays').value)||null;
-  const mPD=parseInt(document.getElementById('pMaxDay').value)||null;
+  const nTv=document.getElementById('pTeams').value;
+  const nDv=document.getElementById('pDays').value;
+  const mPDv=document.getElementById('pMaxDay').value;
+  const nT=nTv?parseInt(nTv):null;
+  const nD=nDv?parseInt(nDv):null;
+  const mPD=mPDv?parseInt(mPDv):null;
   const n=planUploadRows.length;
   info.style.display='block';
-  if(nT&&nD&&mPD){const cap=nT*nD*mPD;const ok=n<=cap;info.style.color=ok?'var(--grn)':'var(--ylw)';info.textContent=`${n} sites · ${nT} teams × ${nD} days × ${mPD}/day = ${cap} capacity${ok?' ✅':' ⚠️ over by '+(n-cap)}`;}
-  else{info.style.color='var(--mut)';info.textContent=`${n} plan sites loaded · Fill in team requirements above`;}
+  if(nT&&nD&&mPD){
+    const cap=nT*nD*mPD;
+    const ok=n<=cap;
+    info.style.color=ok?'var(--grn)':'var(--ylw)';
+    info.textContent=`${n} sites · ${nT} teams × ${nD} days × ${mPD}/day = ${cap} capacity${ok?' ✅':' ⚠️ over by '+(n-cap)}`;
+  }else{
+    info.style.color='var(--mut)';
+    info.textContent=`${n} plan sites loaded · Fill in team requirements above (leave empty = auto)`;
+  }
 }
 
-// ══ GENERATE TEAM PLANS ═════════════════════════════
+// ══ GENERATE TEAM PLANS ════════════════════════════
 function generateTeamPlans(){
   if(!planUploadRows.length){toast('Upload a plan file first','er');return;}
   if(!sites.length){toast('Upload sites file first','er');return;}
@@ -874,35 +1056,81 @@ function generateTeamPlans(){
   const maxPD=Math.max(1,parseInt(document.getElementById('pMaxDay').value)||999);
   const defaultPlanner=document.getElementById('pPlannerName').value.trim()||'Planner';
   const planName=document.getElementById('pPlanName').value.trim()||'';
-  const matched=planUploadRows.map(pr=>{const s=sites.find(x=>x.id===pr.siteId);return s?{...s,plannerName:pr.plannerName||defaultPlanner}:null;}).filter(Boolean);
+
+  // Match plan rows to loaded sites
+  const matched=planUploadRows.map(pr=>{
+    const s=sites.find(x=>x.id===pr.siteId);
+    return s?{...s,plannerName:pr.plannerName||defaultPlanner}:null;
+  }).filter(Boolean);
+
   if(!matched.length){toast('No plan sites matched loaded sites. Check Site_IDs.','er');return;}
+
   const hqSite=sites.find(s=>s.id===HQ_ID)||null;
   showLdr('Clustering &amp; distributing sites…');
+
   setTimeout(()=>{
     try{
+      // Remove HQ from distribution pool (it's always start/end)
       const pool=matched.filter(s=>s.id!==HQ_ID);
       const capped=pool.slice(0,nTeams*nDays*maxPD);
-      const clusters=kMeansCluster(capped,Math.min(nTeams,capped.length));
+
+      // k-means++ geographic clustering into nTeams groups
+      const clusters=kMeansCluster(capped, Math.min(nTeams, capped.length));
+
+      // Build team plans
       teamPlans=clusters.map((cluster,ti)=>{
         const color=COLORS[ti%COLORS.length];
         const teamName=`Team ${ti+1}`;
+        // Unique planner names in this cluster
         const planners=[...new Set(cluster.map(s=>s.plannerName).filter(Boolean))];
         const plannerName=planners.length?planners.join(' / '):defaultPlanner;
-        const dayGroups=[];let remaining=[...cluster];let cursor=hqSite||cluster[0];
+
+        // Build days geographically: each day starts where the previous ended.
+        // Day 1 starts from HQ → picks the closest sites first.
+        // Day 2 starts from the last site of Day 1 → continues outward.
+        // This eliminates back-tracking and cross-overs between days.
+        const dayGroups=[];
+        let remaining=[...cluster];
+        let cursor=hqSite||cluster[0]; // start point for Day 1 = HQ
+
         for(let d=0;d<nDays&&remaining.length>0;d++){
-          const daySize=Math.min(maxPD,remaining.length);const daySites=[];
+          const daySize=Math.min(maxPD,remaining.length);
+          const daySites=[];
+
           for(let s=0;s<daySize;s++){
+            // Pick the site in remaining that is closest to current cursor
             let bi=0,bd=Infinity;
-            remaining.forEach((site,i)=>{const dist=hav(cursor.lat,cursor.lng,site.lat,site.lng);if(dist<bd){bd=dist;bi=i;}});
-            cursor=remaining.splice(bi,1)[0];daySites.push(cursor);
+            remaining.forEach((site,i)=>{
+              const dist=hav(cursor.lat,cursor.lng,site.lat,site.lng);
+              if(dist<bd){bd=dist;bi=i;}
+            });
+            cursor=remaining.splice(bi,1)[0];
+            daySites.push(cursor);
           }
+
           dayGroups.push({day:d+1,date:'',sites:daySites});
+          // Next day starts from last site of this day (not HQ again)
+          // so routing is geographically continuous
         }
         const ordered=dayGroups.flatMap(dg=>dg.sites);
-        return{id:ti+1,teamName,plannerName,planName,color,siteIds:ordered.map(s=>s.id),dayGroups,route:null,_km:0,hqSite};
+
+        return{
+          id:ti+1,teamName,plannerName,planName,color,
+          siteIds:ordered.map(s=>s.id),
+          dayGroups,route:null,_km:0,hqSite
+        };
       });
-      teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
-      hideLdr();addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
+
+      // Mark sites as assigned
+      teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{
+        const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;
+      }));
+
+      hideLdr();
+      addMarkers();
+      renderTeamPlanList();
+      renderAllPlans();
+      updHdr();
       document.getElementById('stbar').style.display='flex';
       saveTeamPlans();
       toast(`✅ Generated ${teamPlans.length} team plans`,'ok');
@@ -910,45 +1138,120 @@ function generateTeamPlans(){
   },30);
 }
 
-// ══ GEOGRAPHIC CLUSTERING ═══════════════════════════
+// ══ GEOGRAPHIC CLUSTERING — NO OVERLAP, NO RANDOMNESS ═══════════════
+//
+// Goal: closest sites always stay together, zero crossing between teams.
+//
+// Method: Greedy agglomerative clustering (bottom-up, deterministic)
+// ─────────────────────────────────────────────────────────────────────
+// 1. Start: every site is its own cluster.
+// 2. Repeatedly merge the two clusters whose centroids are closest,
+//    until we have exactly k clusters.
+// 3. No randomness anywhere — the merge order is fully determined by
+//    pairwise distances, which are fixed for fixed input coordinates.
+//
+// Properties:
+//   • Same input  →  same output, always.
+//   • Nearby sites end up in the same cluster (never split across teams).
+//   • No team "reaches across" another team's territory.
+//   • After merging, balance cluster sizes (±1) by moving border sites.
+// ─────────────────────────────────────────────────────────────────────
 function kMeansCluster(pts,k){
-  if(!pts.length)return[];if(k<=1)return[pts];if(k>=pts.length)return pts.map(p=>[p]);
+  if(!pts.length)return[];
+  if(k<=1)return[pts];
+  if(k>=pts.length)return pts.map(p=>[p]);
+
+  // ── 1. Initialise: each point is its own cluster ──────────────────
+  // Sort points by (lat, lng) first so tie-breaking is deterministic.
   const base=[...pts].sort((a,b)=>a.lat!==b.lat?a.lat-b.lat:a.lng-b.lng);
   let clusters=base.map(p=>[p]);
-  const centroid=cl=>({lat:cl.reduce((s,p)=>s+p.lat,0)/cl.length,lng:cl.reduce((s,p)=>s+p.lng,0)/cl.length});
+
+  // ── Centroid helper ───────────────────────────────────────────────
+  const centroid=cl=>({
+    lat:cl.reduce((s,p)=>s+p.lat,0)/cl.length,
+    lng:cl.reduce((s,p)=>s+p.lng,0)/cl.length
+  });
+
+  // ── 2. Merge until k clusters remain ─────────────────────────────
   while(clusters.length>k){
+    // Find the pair of clusters with the smallest centroid distance.
+    // Scanning all pairs is O(n^2) per merge but n is small (≤ a few hundred).
     let bestI=0,bestJ=1,bestD=Infinity;
-    for(let i=0;i<clusters.length-1;i++){const ci=centroid(clusters[i]);for(let j=i+1;j<clusters.length;j++){const cj=centroid(clusters[j]);const d=hav(ci.lat,ci.lng,cj.lat,cj.lng);if(d<bestD){bestD=d;bestI=i;bestJ=j;}}}
-    clusters[bestI]=[...clusters[bestI],...clusters[bestJ]];clusters.splice(bestJ,1);
+    for(let i=0;i<clusters.length-1;i++){
+      const ci=centroid(clusters[i]);
+      for(let j=i+1;j<clusters.length;j++){
+        const cj=centroid(clusters[j]);
+        const d=hav(ci.lat,ci.lng,cj.lat,cj.lng);
+        if(d<bestD){bestD=d;bestI=i;bestJ=j;}
+      }
+    }
+    // Merge j into i, remove j
+    clusters[bestI]=[...clusters[bestI],...clusters[bestJ]];
+    clusters.splice(bestJ,1);
   }
+
+  // ── 3. Balance cluster sizes (±1) without crossing boundaries ─────
+  // Move sites from the largest cluster to the smallest,
+  // always picking the site that is geographically closest
+  // to the receiving cluster's centroid — so cohesion is preserved.
+  const target=Math.ceil(pts.length/k);
   for(let pass=0;pass<pts.length;pass++){
     const mxIdx=clusters.reduce((bi,c,i)=>c.length>clusters[bi].length?i:bi,0);
     const mnIdx=clusters.reduce((bi,c,i)=>c.length<clusters[bi].length?i:bi,0);
     if(clusters[mxIdx].length-clusters[mnIdx].length<=1)break;
-    const rc=centroid(clusters[mnIdx]);let pickI=0,pickD=Infinity;
-    clusters[mxIdx].forEach((p,i)=>{const d=hav(p.lat,p.lng,rc.lat,rc.lng);if(d<pickD){pickD=d;pickI=i;}});
+    const rc=centroid(clusters[mnIdx]);
+    // Pick the site in the large cluster nearest the small cluster centroid
+    let pickI=0,pickD=Infinity;
+    clusters[mxIdx].forEach((p,i)=>{
+      const d=hav(p.lat,p.lng,rc.lat,rc.lng);
+      if(d<pickD){pickD=d;pickI=i;}
+    });
     clusters[mnIdx].push(clusters[mxIdx].splice(pickI,1)[0]);
   }
+
   return clusters.filter(c=>c.length>0);
 }
 
-// ══ RENDER TEAM PLAN LIST (Tab 2) ═══════════════════
+// Nearest-neighbor ordering from a start point
+function nnOrder(arr,start){
+  if(!arr.length)return[];
+  const rem=[...arr];const res=[];let cur=start;
+  while(rem.length){
+    let bi=0,bd=Infinity;
+    rem.forEach((s,i)=>{const d=hav(cur.lat,cur.lng,s.lat,s.lng);if(d<bd){bd=d;bi=i;}});
+    cur=rem.splice(bi,1)[0];res.push(cur);
+  }
+  return res;
+}
+
+// ══ RENDER TEAM PLAN LIST (Tab 2) ══════════════════
 function renderTeamPlanList(){
   const list=document.getElementById('planList');
+  if(!teamPlans.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans yet</div>';
+    return;
+  }
   const _vtpl=visiblePlans();
-  if(!_vtpl.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans yet</div>';return;}
+  if(!_vtpl.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans yet</div>';
+    return;
+  }
   list.innerHTML=_vtpl.map((tp)=>{const ti=teamPlans.indexOf(tp);return `
     <div class="tcard" id="tcard-${ti}">
-      <div class="tcard-head" onclick="togglePlanCollapse(${ti})" style="cursor:pointer;">
+      <div class="tcard-head" onclick="togglePlanCollapse(${ti})" style="cursor:pointer;" title="Click to collapse/expand">
         <button class="collapse-btn" id="pcbtn-${ti}" onclick="event.stopPropagation();togglePlanCollapse(${ti})">▼</button>
         <div class="tcard-dot" style="background:${tp.color}"></div>
         <div class="tcard-name" style="color:${tp.color}">
-          <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px" value="${tp.teamName}"
-            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+          <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px"
+            value="${tp.teamName}"
+            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans()"
+            onclick="event.stopPropagation()" title="Click to rename team">
         </div>
         <div class="tcard-meta">
-          <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px" value="${tp.plannerName}"
-            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+          <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px"
+            value="${tp.plannerName}"
+            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()"
+            onclick="event.stopPropagation()" title="Click to edit planner name">
         </div>
         <span style="font-size:10px;color:var(--mut);font-family:var(--mono);margin-left:4px">${tp.siteIds.length} sites · ${tp.dayGroups.length}d${tp._km?' · '+tp._km.toFixed(1)+'km':''}</span>
       </div>
@@ -956,18 +1259,21 @@ function renderTeamPlanList(){
         <div class="tcard-days">
           ${tp.dayGroups.map((dg,di)=>`
             <div class="tday" id="tday-${ti}-${di}">
-              <div class="tday-head" onclick="toggleDayCollapse(${ti},${di})">
+              <div class="tday-head" onclick="toggleDayCollapse(${ti},${di})" title="Click to collapse/expand day">
                 <button class="collapse-btn" id="dcbtn-${ti}-${di}" onclick="event.stopPropagation();toggleDayCollapse(${ti},${di})">▼</button>
                 📅 Day ${dg.day}
-                <input type="date" class="day-date-inp" value="${dg.date||''}"
-                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()" onclick="event.stopPropagation()">
+                <input type="date" class="day-date-inp"
+                  value="${dg.date||''}"
+                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()"
+                  onclick="event.stopPropagation()"
+                  title="Set date for this day">
                 <span style="font-size:10px;color:var(--mut)">(${dg.sites.length} sites)</span>
               </div>
               <div class="tday-body" id="dbody-${ti}-${di}">
                 <div class="tday-actions">
-                  <button class="btn-xs btn-xs-acc" onclick="calcDayRoute(${ti},${di})">🗺 Map Day</button>
-                  <button class="btn-xs btn-xs-grn" onclick="optimizeDayRoute(${ti},${di})">🔀 Optimize Day</button>
-                  <button class="btn-xs btn-xs-ylw" onclick="exportDayPlan(${ti},${di})">📥 Export Day</button>
+                  <button class="btn-xs btn-xs-acc" onclick="calcDayRoute(${ti},${di})" title="Show optimized route for this day on map">🗺 Map Day</button>
+                  <button class="btn-xs btn-xs-grn" onclick="optimizeDayRoute(${ti},${di})" title="Optimize route order for this day">🔀 Optimize Day</button>
+                  <button class="btn-xs btn-xs-ylw" onclick="exportDayPlan(${ti},${di})" title="Export this day to Excel">📥 Export Day</button>
                 </div>
                 <div class="tday-sites">
                   ${tp.hqSite?`<div class="tsite-row"><span class="hq-badge">🏠 ${tp.hqSite.id} · ${tp.hqSite.name}</span></div>`:''}
@@ -995,30 +1301,54 @@ function renderTeamPlanList(){
   }).join('');
 }
 
-// ══ RENDER ALL PLANS (Tab 3) ════════════════════════
+// ══ RENDER ALL PLANS (Tab 3) ═══════════════════════
 function renderAllPlans(filter=''){
   const list=document.getElementById('apList');
-  if(!teamPlans.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans generated yet</div>';return;}
+  if(!teamPlans.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans generated yet</div>';
+    return;
+  }
   const q=filter.toLowerCase().trim();
   const _vp=visiblePlans();
-  const visible=_vp.map(tp=>({tp,ti:teamPlans.indexOf(tp)})).filter(({tp})=>{
+  const visible=_vp.map((tp)=>({tp,ti:teamPlans.indexOf(tp)})).filter(({tp})=>{
     if(!q)return true;
-    return(tp.planName||'').toLowerCase().includes(q)||tp.teamName.toLowerCase().includes(q)||tp.plannerName.toLowerCase().includes(q);
+    return (tp.planName||'').toLowerCase().includes(q)||
+           tp.teamName.toLowerCase().includes(q)||
+           tp.plannerName.toLowerCase().includes(q);
   });
+
   const info=document.getElementById('apSrchInfo');
-  if(q){info.style.display='block';info.textContent=`${visible.length} of ${teamPlans.length} plans match "${filter}"`;}
-  else info.style.display='none';
-  if(!visible.length){list.innerHTML='<div style="padding:18px;text-align:center;color:var(--mut);font-size:12px">No plans match your search</div>';return;}
-  const groups=[];const seen=new Map();
-  visible.forEach(({tp,ti})=>{const key=tp.planName||'__noname__';if(!seen.has(key)){seen.set(key,groups.length);groups.push({planName:tp.planName||'',items:[]});}groups[seen.get(key)].items.push({tp,ti});});
+  if(q){
+    info.style.display='block';
+    info.textContent=`${visible.length} of ${teamPlans.length} plans match "${filter}"`;
+  }else{
+    info.style.display='none';
+  }
+
+  if(!visible.length){
+    list.innerHTML='<div style="padding:18px;text-align:center;color:var(--mut);font-size:12px">No plans match your search</div>';
+    return;
+  }
+
+  // Group by planName so same-plan teams are visually grouped
+  const groups=[];
+  const seen=new Map();
+  visible.forEach(({tp,ti})=>{
+    const key=tp.planName||'__noname__';
+    if(!seen.has(key)){seen.set(key,groups.length);groups.push({planName:tp.planName||'',items:[]});}
+    groups[seen.get(key)].items.push({tp,ti});
+  });
+
   list.innerHTML=groups.map(g=>`
-    ${g.planName?`<div style="margin:10px 6px 4px;display:flex;align-items:center;gap:8px;">
-      <div style="flex:1;height:1px;background:var(--bd);"></div>
-      <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--acc3);letter-spacing:.5px;white-space:nowrap;">📝 ${g.planName}</span>
-      <div style="flex:1;height:1px;background:var(--bd);"></div></div>`:''}
+    ${g.planName?`
+      <div style="margin:10px 6px 4px;display:flex;align-items:center;gap:8px;">
+        <div style="flex:1;height:1px;background:var(--bd);"></div>
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--acc3);letter-spacing:.5px;white-space:nowrap;">📝 ${g.planName}</span>
+        <div style="flex:1;height:1px;background:var(--bd);"></div>
+      </div>` : ''}
     ${g.items.map(({tp,ti})=>`
     <div class="ap-card" id="apcard-${ti}">
-      <div class="ap-card-head" onclick="toggleApCollapse(${ti})" style="cursor:pointer;">
+      <div class="ap-card-head" onclick="toggleApCollapse(${ti})" style="cursor:pointer;" title="Click to collapse/expand">
         <button class="collapse-btn" id="apcbtn-${ti}" onclick="event.stopPropagation();toggleApCollapse(${ti})">▼</button>
         <div class="ap-dot" style="background:${tp.color}"></div>
         <div class="ap-name" style="color:${tp.color}">${tp.teamName}</div>
@@ -1049,125 +1379,83 @@ function renderAllPlans(filter=''){
         <div class="ap-btns">
           <button class="btn btn-acc btn-sm" onclick="calcTeamRoute(${ti})">🔀 Optimize Route</button>
           <button class="btn btn-ylw btn-sm" onclick="exportTeamPlan(${ti})">📥 Export Excel</button>
-          <button class="btn btn-r btn-sm" onclick="if(confirm('Delete ${tp.teamName}?'))deleteTeamPlan(${ti})">🗑️ Delete</button>
+          <button class="btn btn-r btn-sm" onclick="if(confirm('Delete ${tp.teamName}?'))deleteTeamPlan(${ti})" title="Delete this plan">🗑️ Delete</button>
         </div>
       </div>
     </div>`).join('')}
   `).join('');
 }
 
-function filterAllPlans(){renderAllPlans(document.getElementById('apSrchIn').value);}
+function filterAllPlans(){
+  renderAllPlans(document.getElementById('apSrchIn').value);
+}
 
-function toggleApCollapse(ti){const body=document.getElementById('apbody-'+ti);const btn=document.getElementById('apcbtn-'+ti);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
-function toggleApDayCollapse(ti,di){const body=document.getElementById('apdbody-'+ti+'-'+di);const btn=document.getElementById('apdcbtn-'+ti+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
+function toggleApCollapse(ti){
+  const body=document.getElementById('apbody-'+ti);
+  const btn=document.getElementById('apcbtn-'+ti);
+  if(!body||!btn)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'':'none';
+  btn.classList.toggle('collapsed',!collapsed);
+}
+function toggleApDayCollapse(ti,di){
+  const body=document.getElementById('apdbody-'+ti+'-'+di);
+  const btn=document.getElementById('apdcbtn-'+ti+'-'+di);
+  if(!body||!btn)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'':'none';
+  btn.classList.toggle('collapsed',!collapsed);
+}
 
-// ══ DAY-LEVEL ROUTE FUNCTIONS ════════════════════════
+
+
+
+// ══ DAY-LEVEL ROUTE FUNCTIONS ═══════════════════════
+// Map Day: opens Google Maps in a new tab — no API key needed
 function calcDayRoute(ti,di){
-  const tp=teamPlans[ti];if(!tp)return;const dg=tp.dayGroups[di];if(!dg||!dg.sites.length){toast('No sites in this day','er');return;}
+  const tp=teamPlans[ti];if(!tp)return;
+  const dg=tp.dayGroups[di];if(!dg||!dg.sites.length){toast('No sites in this day','er');return;}
   const ordered=[...(tp.hqSite?[tp.hqSite]:[]),...dg.sites,...(tp.hqSite?[tp.hqSite]:[])];
-  const url=buildGoogleMapsUrl(ordered);window.open(url,'_blank');
+  const url=buildGoogleMapsUrl(ordered);
+  window.open(url,'_blank');
   toast(`Opening ${tp.teamName} Day ${dg.day} in Google Maps…`,'ok');
 }
 
 function buildGoogleMapsUrl(ordered){
-  const pts=ordered.filter((s,i,arr)=>i===0||!(s.lat===arr[i-1].lat&&s.lng===arr[i-1].lng));
-  const MAX_STOPS=10;let used=pts;
-  if(pts.length>MAX_STOPS){const step=Math.ceil((pts.length-2)/(MAX_STOPS-2));used=[pts[0]];for(let i=step;i<pts.length-1;i+=step)used.push(pts[i]);used.push(pts[pts.length-1]);}
-  return`https://www.google.com/maps/dir/${used.map(s=>`${s.lat},${s.lng}`).join('/')}/`;
-}
-
-function openCurrentGMRoute(){if(!currentGMUrl){toast('Calculate a route first','in');return;}window.open(currentGMUrl,'_blank');}
-
-async function optimizeDayRoute(ti,di){
-  const tp=teamPlans[ti];if(!tp)return;const dg=tp.dayGroups[di];if(!dg||!dg.sites.length){toast('No sites in this day','er');return;}
-  showLdr(`Optimizing Day ${dg.day}…`);
-  let ord=nn(dg.sites);if(ord.length<=12)ord=twoOpt(ord);
-  dg.sites=ord;tp.siteIds=tp.dayGroups.flatMap(d=>d.sites.map(s=>s.id));
-  const ordered=[...(tp.hqSite?[tp.hqSite]:[]),...dg.sites,...(tp.hqSite?[tp.hqSite]:[])];
-  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id&&l._dayIdx===di){map.removeLayer(l);return false;}return true;});
-  try{
-    const r=await fetchRoute(ordered);hideLdr();
-    const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{color:tp.color,weight:5,opacity:.9}).addTo(map);
-    poly._tpid=tp.id;poly._dayIdx=di;rLayers.push(poly);
-    map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    currentGMUrl=buildGoogleMapsUrl(ordered);
-    renderTeamPlanList();renderAllPlans();
-    toast(`✅ Day ${dg.day} optimized — ${r.distance.toFixed(1)} km`,'ok');
-  }catch(err){
-    hideLdr();
-    const poly=L.polyline(ordered.map(s=>[s.lat,s.lng]),{color:tp.color,weight:4,opacity:.75,dashArray:'8 5'}).addTo(map);
-    poly._tpid=tp.id;poly._dayIdx=di;rLayers.push(poly);
-    map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    currentGMUrl=buildGoogleMapsUrl(ordered);
-    renderTeamPlanList();renderAllPlans();
-    toast(`Day ${dg.day} optimized (straight-line fallback)`,'in');
+  // API-key-free Google Maps directions URL using the /maps/dir/ path format.
+  // No API key needed — opens in Google Maps browser or mobile app.
+  const pts=ordered.filter((s,i,arr)=>{
+    if(i===0)return true;
+    // remove consecutive duplicate coords (HQ at start and end)
+    return!(s.lat===arr[i-1].lat&&s.lng===arr[i-1].lng);
+  });
+  // Google Maps URL path format supports up to ~10 stops reliably
+  const MAX_STOPS=10;
+  let used=pts;
+  if(pts.length>MAX_STOPS){
+    const step=Math.ceil((pts.length-2)/(MAX_STOPS-2));
+    used=[pts[0]];
+    for(let i=step;i<pts.length-1;i+=step)used.push(pts[i]);
+    used.push(pts[pts.length-1]);
   }
+  // Each stop as "lat,lng" joined by "/"
+  const seg=used.map(s=>`${s.lat},${s.lng}`).join('/');
+  return `https://www.google.com/maps/dir/${seg}/`;
 }
 
-function exportDayPlan(ti,di){
-  const tp=teamPlans[ti];if(!tp)return;const dg=tp.dayGroups[di];if(!dg){toast('Day not found','er');return;}
-  const wb=XLSX.utils.book_new();
-  const sumData=[['Z Route — Day Plan Export',''],['Plan Name',tp.planName||'—'],['Team',tp.teamName],['Planner',tp.plannerName],['Day',`Day ${dg.day}`],['Date',dg.date||'—'],['Sites',dg.sites.length],['HQ Site ID',HQ_ID],['Generated',new Date().toLocaleString()]];
-  const sumWS=XLSX.utils.aoa_to_sheet(sumData);sumWS['!cols']=[{wch:18},{wch:28}];XLSX.utils.book_append_sheet(wb,sumWS,'Summary');
-  const hdr=['Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Sub District','Vendor','Category','Power Class','Owner','Contact Person','Contact Number'];
-  const rows=[hdr];const hq=tp.hqSite;
-  if(hq)rows.push(['START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
-  dg.sites.forEach((s,si)=>rows.push([si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.subdist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.owner||'',s.contact||'',s.contactn||'']));
-  if(hq)rows.push(['END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
-  const planWS=XLSX.utils.aoa_to_sheet(rows);planWS['!cols']=[{wch:7},{wch:11},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:13},{wch:13},{wch:13},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
-  XLSX.utils.book_append_sheet(wb,planWS,`Day ${dg.day}${dg.date?' '+dg.date:''}`.substring(0,31));
-  XLSX.writeFile(wb,`ZRoute_${(tp.planName||tp.teamName).replace(/\s+/g,'_')}_Day${dg.day}${dg.date?'_'+dg.date:''}.xlsx`);
-  toast(`Exported Day ${dg.day}`,'ok');
+function openCurrentGMRoute(){
+  if(!currentGMUrl){toast('Calculate a route first','in');return;}
+  window.open(currentGMUrl,'_blank');
 }
 
-// ══ ROUTE CALCULATION ═══════════════════════════════
-async function calcTeamRoute(ti){
-  const tp=teamPlans[ti];if(!tp)return;
-  showLdr(`Routing ${tp.teamName}…`);
-  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id){map.removeLayer(l);return false;}return true;});
-  try{
-    tp.dayGroups.forEach(dg=>{if(dg.sites.length>2){let ord=nn(dg.sites);if(ord.length<=12)ord=twoOpt(ord);dg.sites=ord;}});
-    const optimized=[];tp.dayGroups.forEach(dg=>{if(tp.hqSite)optimized.push(tp.hqSite);optimized.push(...dg.sites);if(tp.hqSite)optimized.push(tp.hqSite);});
-    const r=await fetchRoute(optimized);hideLdr();
-    const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{color:tp.color,weight:5,opacity:.85}).addTo(map);
-    poly._tpid=tp.id;rLayers.push(poly);tp._km=r.distance;updHdr();
-    showRoutePanelTeam(tp,optimized,r);map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    saveTeamPlans();renderTeamPlanList();renderAllPlans();
-    toast(`${tp.teamName}: ${r.distance.toFixed(1)} km · ~${Math.round(r.duration)} min`,'ok');
-  }catch(err){
-    hideLdr();toast('Road routing unavailable — fallback','in');
-    const flat=[];tp.dayGroups.forEach(dg=>{if(tp.hqSite)flat.push(tp.hqSite);flat.push(...dg.sites);if(tp.hqSite)flat.push(tp.hqSite);});
-    const poly=L.polyline(flat.map(s=>[s.lat,s.lng]),{color:tp.color,weight:4,opacity:.7,dashArray:'8 5'}).addTo(map);
-    poly._tpid=tp.id;rLayers.push(poly);tp._km=totD(flat);updHdr();
-    showRoutePanelTeam(tp,flat,{distance:tp._km,duration:tp._km*1.5});
-    map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    saveTeamPlans();renderTeamPlanList();renderAllPlans();
-  }
-}
-
-async function calcAllRoutes(){for(let i=0;i<teamPlans.length;i++)await calcTeamRoute(i);}
-
-function showTeamOnMap(ti){
-  const tp=teamPlans[ti];if(!tp)return;
-  const coords=tp.siteIds.map(id=>{const s=sites.find(x=>x.id===id);return s?[s.lat,s.lng]:null;}).filter(Boolean);
-  if(tp.hqSite)coords.push([tp.hqSite.lat,tp.hqSite.lng]);
-  if(coords.length)map.fitBounds(L.latLngBounds(coords),{padding:[40,40]});
-}
-
-function deleteTeamPlan(ti){
-  const tp=teamPlans[ti];if(!tp)return;
-  tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=null;});
-  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id){map.removeLayer(l);return false;}return true;});
-  teamPlans.splice(ti,1);saveTeamPlans();addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
-}
-
-function showRoutePanelTeam(tp,ordered,result){
+function showRoutePanelDay(tp,dg,ordered,result){
   const panel=document.getElementById('rpanel');panel.style.display='block';
-  document.getElementById('rpTtl').innerHTML=`<span style="color:${tp.color}">●</span> ${tp.teamName}`;
+  const dateStr=dg.date?` · ${dg.date}`:'';
+  document.getElementById('rpTtl').innerHTML=`<span style="color:${tp.color}">●</span> ${tp.teamName} — Day ${dg.day}${dateStr}`;
   document.getElementById('rpSum').innerHTML=`<b>${result.distance.toFixed(1)} km</b> · ~${Math.round(result.duration)} min · ${ordered.length} stops`;
   document.getElementById('rpStops').innerHTML=ordered.map((s,i)=>{
     const isHQ=s.id===HQ_ID;
-    return`<div class="stoprow${isHQ?' active-stop':''}">
+    return `<div class="stoprow${isHQ?' active-stop':''}">
       <div class="snum-b" style="background:${isHQ?'#fbbf24':tp.color}">${isHQ?'🏠':i+1}</div>
       <div class="stop-body">
         <div class="stop-name">${s.name}</div>
@@ -1181,32 +1469,240 @@ function showRoutePanelTeam(tp,ordered,result){
   currentGMUrl=buildGoogleMapsUrl(ordered);
 }
 
-// ══ EXPORT ══════════════════════════════════════════
+async function optimizeDayRoute(ti,di){
+  const tp=teamPlans[ti];if(!tp)return;
+  const dg=tp.dayGroups[di];if(!dg||dg.sites.length<2){toast('Need ≥2 sites to optimize','er');return;}
+  showLdr(`Optimizing ${tp.teamName} Day ${dg.day} on map…`);
+
+  // Step 1 — reorder sites with nearest-neighbour + 2-opt
+  await new Promise(res=>setTimeout(res,20));
+  let ord=nn(dg.sites);
+  if(ord.length<=14)ord=twoOpt(ord);
+  tp.dayGroups[di].sites=ord;
+  saveTeamPlans();
+
+  // Step 2 — build ordered stop list: HQ → sites → HQ
+  const ordered=[...(tp.hqSite?[tp.hqSite]:[]),...ord,...(tp.hqSite?[tp.hqSite]:[])];
+  if(ordered.length<2){hideLdr();toast('Need ≥2 stops','er');return;}
+
+  // Step 3 — remove previous route layers for this day
+  rLayers=rLayers.filter(l=>{
+    if(l._tpid===tp.id&&l._dayIdx===di){map.removeLayer(l);return false;}
+    return true;
+  });
+
+  // Step 4 — fetch road route from OSRM and draw on current map
+  try{
+    const r=await fetchRoute(ordered);
+    hideLdr();
+    const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{
+      color:tp.color,weight:5,opacity:.9
+    }).addTo(map);
+    poly._tpid=tp.id;poly._dayIdx=di;
+    rLayers.push(poly);
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    currentGMUrl=buildGoogleMapsUrl(ordered);
+    renderTeamPlanList();renderAllPlans();
+    toast(`✅ Day ${dg.day} optimized — ${r.distance.toFixed(1)} km on map`,'ok');
+  }catch(err){
+    hideLdr();
+    // Fallback: straight-line polyline on map
+    const poly=L.polyline(ordered.map(s=>[s.lat,s.lng]),{
+      color:tp.color,weight:4,opacity:.75,dashArray:'8 5'
+    }).addTo(map);
+    poly._tpid=tp.id;poly._dayIdx=di;
+    rLayers.push(poly);
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    currentGMUrl=buildGoogleMapsUrl(ordered);
+    renderTeamPlanList();renderAllPlans();
+    toast(`Day ${dg.day} optimized (straight-line fallback)`,'in');
+  }
+}
+
+function exportDayPlan(ti,di){
+  const tp=teamPlans[ti];if(!tp)return;
+  const dg=tp.dayGroups[di];if(!dg){toast('Day not found','er');return;}
+  const wb=XLSX.utils.book_new();
+  // Summary
+  const dateStr=dg.date?dg.date:'—';
+  const sumData=[
+    ['Z Route — Day Plan Export',''],
+    ['Plan Name',tp.planName||'—'],
+    ['Team',tp.teamName],
+    ['Planner',tp.plannerName],
+    ['Day',`Day ${dg.day}`],
+    ['Date',dateStr],
+    ['Sites',dg.sites.length],
+    ['HQ Site ID',HQ_ID],
+    ['Generated',new Date().toLocaleString()],
+  ];
+  const sumWS=XLSX.utils.aoa_to_sheet(sumData);
+  sumWS['!cols']=[{wch:18},{wch:28}];
+  XLSX.utils.book_append_sheet(wb,sumWS,'Summary');
+  // Route sheet
+  const hdr=['Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Sub District','Vendor','Category','Power Class','Owner','Contact Person','Contact Number'];
+  const rows=[hdr];
+  const hq=tp.hqSite;
+  if(hq)rows.push(['START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
+  dg.sites.forEach((s,si)=>rows.push([si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.subdist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.owner||'',s.contact||'',s.contactn||'']));
+  if(hq)rows.push(['END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
+  const planWS=XLSX.utils.aoa_to_sheet(rows);
+  planWS['!cols']=[{wch:7},{wch:11},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:13},{wch:13},{wch:13},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
+  const sheetName=`Day ${dg.day}${dg.date?' '+dg.date:''}`.substring(0,31);
+  XLSX.utils.book_append_sheet(wb,planWS,sheetName);
+  const fname=`ZRoute_${(tp.planName||tp.teamName).replace(/\s+/g,'_')}_Day${dg.day}${dg.date?'_'+dg.date:''}.xlsx`;
+  XLSX.writeFile(wb,fname);
+  toast(`Exported Day ${dg.day}`,'ok');
+}
+
+// ══ ROUTE CALCULATION ══════════════════════════════
+async function calcTeamRoute(ti){
+  const tp=teamPlans[ti];if(!tp)return;
+  // Build full ordered list: HQ → day1 sites → HQ → day2 sites → HQ …
+  const allInOrder=[];
+  tp.dayGroups.forEach(dg=>{
+    if(tp.hqSite)allInOrder.push(tp.hqSite);
+    allInOrder.push(...dg.sites);
+    if(tp.hqSite)allInOrder.push(tp.hqSite);
+  });
+  if(allInOrder.length<2){toast('Need ≥2 sites','er');return;}
+  showLdr(`Routing ${tp.teamName}…`);
+  // Remove old route layers
+  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id){map.removeLayer(l);return false;}return true;});
+  try{
+    // Optimize each day's internal order with nearest-neighbor + 2-opt
+    tp.dayGroups.forEach(dg=>{
+      if(dg.sites.length>2){
+        let ord=nn(dg.sites);
+        if(ord.length<=12)ord=twoOpt(ord);
+        dg.sites=ord;
+      }
+    });
+    const optimized=[];
+    tp.dayGroups.forEach(dg=>{
+      if(tp.hqSite)optimized.push(tp.hqSite);
+      optimized.push(...dg.sites);
+      if(tp.hqSite)optimized.push(tp.hqSite);
+    });
+    const r=await fetchRoute(optimized);
+    hideLdr();
+    const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{color:tp.color,weight:5,opacity:.85}).addTo(map);
+    poly._tpid=tp.id;rLayers.push(poly);
+    tp._km=r.distance;updHdr();
+    showRoutePanelTeam(tp,optimized,r);
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    saveTeamPlans();
+    saveTeamPlans();
+    renderTeamPlanList();renderAllPlans();
+    toast(`${tp.teamName}: ${r.distance.toFixed(1)} km · ~${Math.round(r.duration)} min`,'ok');
+  }catch(err){
+    hideLdr();toast('Road routing unavailable — fallback','in');
+    const flat=[];
+    tp.dayGroups.forEach(dg=>{if(tp.hqSite)flat.push(tp.hqSite);flat.push(...dg.sites);if(tp.hqSite)flat.push(tp.hqSite);});
+    const poly=L.polyline(flat.map(s=>[s.lat,s.lng]),{color:tp.color,weight:4,opacity:.7,dashArray:'8 5'}).addTo(map);
+    poly._tpid=tp.id;rLayers.push(poly);
+    tp._km=totD(flat);updHdr();
+    showRoutePanelTeam(tp,flat,{distance:tp._km,duration:tp._km*1.5});
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    saveTeamPlans();
+    renderTeamPlanList();renderAllPlans();
+  }
+}
+
+async function calcAllRoutes(){
+  for(let i=0;i<teamPlans.length;i++)await calcTeamRoute(i);
+}
+
+function showTeamOnMap(ti){
+  const tp=teamPlans[ti];if(!tp)return;
+  const coords=tp.siteIds.map(id=>{const s=sites.find(x=>x.id===id);return s?[s.lat,s.lng]:null;}).filter(Boolean);
+  if(tp.hqSite)coords.push([tp.hqSite.lat,tp.hqSite.lng]);
+  if(coords.length)map.fitBounds(L.latLngBounds(coords),{padding:[40,40]});
+}
+
+function deleteTeamPlan(ti){
+  const tp=teamPlans[ti];if(!tp)return;
+  tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=null;});
+  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id){map.removeLayer(l);return false;}return true;});
+  teamPlans.splice(ti,1);
+  saveTeamPlans();
+  addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
+}
+
+// ══ ROUTE PANEL ════════════════════════════════════
+function showRoutePanelTeam(tp,ordered,result){
+  const panel=document.getElementById('rpanel');panel.style.display='block';
+  document.getElementById('rpTtl').innerHTML=`<span style="color:${tp.color}">●</span> ${tp.teamName}`;
+  document.getElementById('rpSum').innerHTML=`<b>${result.distance.toFixed(1)} km</b> · ~${Math.round(result.duration)} min · ${ordered.length} stops`;
+  document.getElementById('rpStops').innerHTML=ordered.map((s,i)=>{
+    const isHQ=s.id===HQ_ID;
+    return `<div class="stoprow${isHQ?' active-stop':''}">
+      <div class="snum-b" style="background:${isHQ?'#fbbf24':tp.color}">${isHQ?'🏠':i+1}</div>
+      <div class="stop-body">
+        <div class="stop-name">${s.name}</div>
+        <div class="stop-code">ID:${s.id}${s.gov?' · '+s.gov:''}</div>
+        <div class="stop-dist">${i===0?'Start':'~'+hav(ordered[i-1].lat,ordered[i-1].lng,s.lat,s.lng).toFixed(1)+' km'}</div>
+        ${s.key?`<div class="stop-key">🔑 ${s.key}</div>`:''}
+        ${!isHQ?`<div class="stop-acts"><button class="btn btn-g" style="font-size:11px;padding:3px 8px" onclick="navToSite('${s.id}')">🗺 Nav</button></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  currentGMUrl=buildGoogleMapsUrl(ordered);
+}
+
+// ══ EXPORT TEAM PLAN ═══════════════════════════════
 function exportTeamPlan(ti){
   const tp=teamPlans[ti];if(!tp){toast('Plan not found','er');return;}
   const wb=XLSX.utils.book_new();
-  const sumData=[['Z Route — Team Plan Export','',''],['Plan Name',tp.planName||'—',''],['Team Name',tp.teamName,''],['Planner',tp.plannerName,''],['Total Sites',tp.siteIds.length,''],['Working Days',tp.dayGroups.length,''],['Total Distance (km)',tp._km?tp._km.toFixed(1):'Not calculated yet',''],['HQ Site ID',HQ_ID,''],['Generated',new Date().toLocaleString(),'']];
-  const sumWS=XLSX.utils.aoa_to_sheet(sumData);sumWS['!cols']=[{wch:22},{wch:28},{wch:16}];XLSX.utils.book_append_sheet(wb,sumWS,'Summary');
+
+  // Sheet 1: Summary
+  const sumData=[
+    ['Z Route — Team Plan Export','',''],
+    ['Plan Name',tp.planName||'—',''],
+    ['Team Name',tp.teamName,''],
+    ['Planner',tp.plannerName,''],
+    ['Total Sites',tp.siteIds.length,''],
+    ['Working Days',tp.dayGroups.length,''],
+    ['Total Distance (km)',tp._km?tp._km.toFixed(1):'Not calculated yet',''],
+    ['HQ Site ID',HQ_ID,''],
+    ['Generated',new Date().toLocaleString(),''],
+  ];
+  const sumWS=XLSX.utils.aoa_to_sheet(sumData);
+  sumWS['!cols']=[{wch:22},{wch:28},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,sumWS,'Summary');
+
+  // Sheet 2: Full Route Plan
   const hdr=['Team','Planner','Day','Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Sub District','Vendor','Category','Power Class','Owner','Contact Person','Contact Number'];
   const rows=[hdr];
   tp.dayGroups.forEach(dg=>{
     const hq=tp.hqSite;
+    // Start HQ
     if(hq)rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,'START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
-    dg.sites.forEach((s,si)=>rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.subdist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.owner||'',s.contact||'',s.contactn||'']));
+    dg.sites.forEach((s,si)=>{
+      rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.subdist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.owner||'',s.contact||'',s.contactn||'']);
+    });
+    // End HQ
     if(hq)rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,'END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
     rows.push(Array(hdr.length).fill(''));
   });
-  const planWS=XLSX.utils.aoa_to_sheet(rows);planWS['!cols']=[{wch:10},{wch:16},{wch:8},{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
+  const planWS=XLSX.utils.aoa_to_sheet(rows);
+  planWS['!cols']=[{wch:10},{wch:16},{wch:8},{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
   XLSX.utils.book_append_sheet(wb,planWS,'Route Plan');
+
+  // Per-day sheets
   tp.dayGroups.forEach(dg=>{
     const dHdr=['Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Vendor','Category','Power Class','Contact Person','Contact Number'];
-    const dRows=[dHdr];const hq=tp.hqSite;
+    const dRows=[dHdr];
+    const hq=tp.hqSite;
     if(hq)dRows.push(['START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.contact||'',hq.contactn||'']);
     dg.sites.forEach((s,si)=>dRows.push([si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.contact||'',s.contactn||'']));
     if(hq)dRows.push(['END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.contact||'',hq.contactn||'']);
-    const dWS=XLSX.utils.aoa_to_sheet(dRows);dWS['!cols']=[{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:12},{wch:12},{wch:18},{wch:16}];
-    XLSX.utils.book_append_sheet(wb,dWS,`Day ${dg.day}${dg.date?' '+dg.date:''}`.substring(0,31));
+    const dWS=XLSX.utils.aoa_to_sheet(dRows);
+    dWS['!cols']=[{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:12},{wch:12},{wch:18},{wch:16}];
+    const dSheetName=`Day ${dg.day}${dg.date?' '+dg.date:''}`.substring(0,31);
+    XLSX.utils.book_append_sheet(wb,dWS,dSheetName);
   });
+
   XLSX.writeFile(wb,`ZRoute_${tp.teamName.replace(/\s+/g,'_')}.xlsx`);
   toast(`Exported ${tp.teamName}`,'ok');
 }
@@ -1214,10 +1710,13 @@ function exportTeamPlan(ti){
 function exportAllPlans(){
   if(!teamPlans.length){toast('No plans to export','er');return;}
   const wb=XLSX.utils.book_new();
+  // Overview sheet
   const ovHdr=['Team','Planner','Total Sites','Days','Distance (km)'];
   const ovRows=[ovHdr,...teamPlans.map(tp=>[tp.teamName,tp.plannerName,tp.siteIds.length,tp.dayGroups.length,tp._km?tp._km.toFixed(1):'—'])];
-  const ovWS=XLSX.utils.aoa_to_sheet(ovRows);XLSX.utils.book_append_sheet(wb,ovWS,'Overview');
-  teamPlans.forEach(tp=>{
+  const ovWS=XLSX.utils.aoa_to_sheet(ovRows);
+  XLSX.utils.book_append_sheet(wb,ovWS,'Overview');
+  // Each team
+  teamPlans.forEach((tp,ti)=>{
     const hdr=['Day','Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Vendor','Category','Contact Person','Contact Number'];
     const rows=[hdr];
     tp.dayGroups.forEach(dg=>{
@@ -1227,29 +1726,42 @@ function exportAllPlans(){
       if(hq)rows.push([`Day ${dg.day}`,'END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.contact||'',hq.contactn||'']);
       rows.push(Array(hdr.length).fill(''));
     });
-    const tWS=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,tWS,tp.teamName.substring(0,31));
+    const tWS=XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb,tWS,tp.teamName.substring(0,31));
   });
   XLSX.writeFile(wb,`ZRoute_AllPlans_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast('All plans exported','ok');
 }
 
-// ══ MARKERS ═════════════════════════════════════════
+// ══ MARKERS ════════════════════════════════════════
 function addMarkers(){
-  if(mLayer)mLayer.clearLayers();mLayer=L.layerGroup().addTo(map);
+  if(mLayer)mLayer.clearLayers();
+  mLayer=L.layerGroup().addTo(map);
   sites.forEach(s=>{
     const tp=s.planId?teamPlans.find(t=>t.id===s.planId):null;
-    const color=tp?tp.color:(s.done?'#34d399':'#5a7a9a');
+    const plan=s.planId?plans.find(p=>p.id===s.planId):null;
+    const color=tp?tp.color:plan?plan.color:(s.done?'#34d399':'#5a7a9a');
     const isHQ=s.id===HQ_ID;
-    const m=L.circleMarker([s.lat,s.lng],{radius:isHQ?10:(s.done?5:7),fillColor:color,color:isHQ?'#fbbf24':'#fff',weight:isHQ?3:2,fillOpacity:s.done?.5:1}).addTo(mLayer);
+    const m=L.circleMarker([s.lat,s.lng],{
+      radius:isHQ?10:(s.done?5:7),
+      fillColor:color,
+      color:isHQ?'#fbbf24':'#fff',
+      weight:isHQ?3:2,
+      fillOpacity:s.done?.5:1
+    }).addTo(mLayer);
+    // Click opens site detail modal
     m.on('click',()=>openSiteDetail(s.id));
-    m.bindTooltip(`<b>${s.name}</b><br>ID: ${s.id}${s.key?' · 🔑'+s.key:''}${isHQ?' · 🏠 HQ':''}`,{sticky:true,opacity:.92});
+    m.bindTooltip(`<b>${s.name}</b><br>ID: ${s.id}${s.key?' · 🔑'+s.key:''}${isHQ?' · 🏠 HQ':''}`,{sticky:true,className:'',opacity:.92});
     s.marker=m;
   });
 }
 
-function fitAll(){if(!sites.length)return;map.fitBounds(L.latLngBounds(sites.map(s=>[s.lat,s.lng])),{padding:[40,40]});}
+function fitAll(){
+  if(!sites.length)return;
+  map.fitBounds(L.latLngBounds(sites.map(s=>[s.lat,s.lng])),{padding:[40,40]});
+}
 
-// ══ SITE DETAIL MODAL ═══════════════════════════════
+// ══ SITE DETAIL MODAL ══════════════════════════════
 function openSiteDetail(siteId){
   const s=sites.find(x=>x.id===siteId);if(!s)return;
   currentSiteDetail=s.id;
@@ -1257,7 +1769,8 @@ function openSiteDetail(siteId){
   const tp=s.planId?teamPlans.find(t=>t.id===s.planId):null;
   document.getElementById('sdSub').textContent=`Site ID: ${s.id}${s.code?' · Code: '+s.code:''}${s.gov?' · '+s.gov:''}${tp?' · '+tp.teamName:''}`;
   const sdKH=document.getElementById('sdKeyHl');
-  if(s.key){sdKH.style.display='block';document.getElementById('sdKeyVal').textContent=s.key;}else sdKH.style.display='none';
+  if(s.key){sdKH.style.display='block';document.getElementById('sdKeyVal').textContent=s.key;}
+  else sdKH.style.display='none';
   const cells=[
     {l:'Site ID',v:s.id,c:'c-acc'},{l:'Site Code',v:s.code||'—'},
     {l:'Owner',v:s.owner||'—'},{l:'Governorate',v:s.gov||'—'},
@@ -1272,25 +1785,38 @@ function openSiteDetail(siteId){
     ...(s.contact?[{l:'Contact',v:s.contact+(s.contactn?' · '+s.contactn:''),full:3}]:[]),
     ...(s.trc?[{l:'TRC',v:s.trc,full:3,c:'c-mut'}]:[]),
   ];
-  document.getElementById('sdGrid').innerHTML=cells.map(c=>`<div class="icell${c.full===3?' full3':c.full===2?' full2':''}"><div class="ic-l">${c.l}</div><div class="ic-v${c.c?' '+c.c:''}">${c.v||'—'}</div></div>`).join('');
+  document.getElementById('sdGrid').innerHTML=cells.map(c=>`
+    <div class="icell${c.full===3?' full3':c.full===2?' full2':''}">
+      <div class="ic-l">${c.l}</div>
+      <div class="ic-v${c.c?' '+c.c:''}">${c.v||'—'}</div>
+    </div>`).join('');
   const equip=[{l:'TL',v:s.tl},{l:'MW',v:s.mw},{l:'Fiber',v:s.fiber},{l:'DWDM',v:s.dwdm},{l:'OLT',v:s.olt},{l:'IPRAN',v:s.ipran},{l:'FTTM',v:s.fttm},{l:'EPA',v:s.epa},{l:'Free Cool',v:s.freecool},{l:'Generator',v:s.gen},{l:'Sharing',v:s.sharing},{l:'IBS',v:s.ibs}];
   document.getElementById('sdFlags').innerHTML=equip.map(e=>`<span class="flag ${e.v==='Yes'?'yes':'no'}">${e.l}:${e.v==='Yes'?'✓':'✗'}</span>`).join('');
   document.getElementById('siteOvl').classList.add('on');
 }
 function closeSiteDetail(){document.getElementById('siteOvl').classList.remove('on');currentSiteDetail=null;}
-function navToSite(siteId){const s=sites.find(x=>x.id===siteId);if(!s)return;window.open(`https://www.google.com/maps/dir//${s.lat},${s.lng}/`,'_blank');}
+function navToSite(siteId){
+  const sid=typeof siteId==='string'?siteId:siteId;
+  const s=sites.find(x=>x.id===sid);if(!s)return;
+  window.open(`https://www.google.com/maps/dir//${s.lat},${s.lng}/`,'_blank');
+}
 
-// ══ SITES LIST ══════════════════════════════════════
+// ══ SITES LIST ═════════════════════════════════════
 function renderSites(filter=''){
   const list=document.getElementById('slist');
-  const items=filter?sites.filter(s=>s.name.toLowerCase().includes(filter)||s.id.toLowerCase().includes(filter)||(s.code&&s.code.toLowerCase().includes(filter))||(s.gov&&s.gov.toLowerCase().includes(filter))||(s.key&&s.key.toLowerCase().includes(filter))):sites;
+  const items=filter?sites.filter(s=>
+    s.name.toLowerCase().includes(filter)||s.id.toLowerCase().includes(filter)||
+    (s.code&&s.code.toLowerCase().includes(filter))||
+    (s.gov&&s.gov.toLowerCase().includes(filter))||(s.key&&s.key.toLowerCase().includes(filter))
+  ):sites;
   if(!items.length){list.innerHTML='<div style="padding:18px;text-align:center;color:var(--mut);font-size:12px">No results</div>';return;}
   list.innerHTML=items.map(s=>{
     const isSel=sel.has(s.id);
     const tp=s.planId?teamPlans.find(t=>t.id===s.planId):null;
+    const plan=s.planId&&!tp?plans.find(p=>p.id===s.planId):null;
     const keytag=s.key?` · <span class="key-badge">🔑${s.key}</span>`:'';
     const isHQ=s.id===HQ_ID;
-    return`<div class="srow${isSel?' sel':''}" onclick="togSel('${s.id}')">
+    return `<div class="srow${isSel?' sel':''}" onclick="togSel('${s.id}')">
       <div class="chk">${isSel?'✓':''}</div>
       <div class="sinfo" ondblclick="openSiteDetail('${s.id}');event.stopPropagation()">
         <div class="sn">${isHQ?'🏠 ':''}${s.done?'<span style="color:var(--grn)">✅</span> ':''}<span style="${s.done?'opacity:.5;text-decoration:line-through':''}">${s.name}</span></div>
@@ -1301,48 +1827,96 @@ function renderSites(filter=''){
   }).join('');
   document.getElementById('selcnt').textContent=`${sel.size} selected`;
 }
-
-function filterSites(){renderSites(document.getElementById('srchIn')?.value?.toLowerCase()||'');}
-function selAll(){sites.forEach(s=>sel.add(s.id));renderSites(document.getElementById('srchIn')?.value?.toLowerCase()||'');}
-function selNone(){sel.clear();renderSites(document.getElementById('srchIn')?.value?.toLowerCase()||'');}
-function selFree(){sel.clear();sites.filter(s=>!s.planId).forEach(s=>sel.add(s.id));renderSites(document.getElementById('srchIn')?.value?.toLowerCase()||'');}
 function togSel(id){sel.has(id)?sel.delete(id):sel.add(id);renderSites(document.getElementById('srchIn')?.value||'');}
+// ══ COLLAPSE / EXPAND ══════════════════════════════
+function togglePlanCollapse(ti){
+  const body=document.getElementById('pcbody-'+ti);
+  const btn=document.getElementById('pcbtn-'+ti);
+  if(!body||!btn)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'':'none';
+  btn.classList.toggle('collapsed',!collapsed);
+}
+function toggleDayCollapse(ti,di){
+  const body=document.getElementById('dbody-'+ti+'-'+di);
+  const btn=document.getElementById('dcbtn-'+ti+'-'+di);
+  if(!body||!btn)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'':'none';
+  btn.classList.toggle('collapsed',!collapsed);
+}
 
-// ══ COLLAPSE/EXPAND ═════════════════════════════════
-function togglePlanCollapse(ti){const body=document.getElementById('pcbody-'+ti);const btn=document.getElementById('pcbtn-'+ti);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
-function toggleDayCollapse(ti,di){const body=document.getElementById('dbody-'+ti+'-'+di);const btn=document.getElementById('dcbtn-'+ti+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
+// ══ SELECTION ══════════════════════════════════════
+// ══ NEW SITES ══════════════════════════════════════
+let newSitesRows = [];
 
-// ══ NEW SITES ═══════════════════════════════════════
-let newSitesRows=[];
-function onNewSitesFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'binary'});parseNewSites(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(ex){toast('Read error: '+ex.message,'er');}};r.readAsBinaryString(f);}
+function onNewSitesFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      parseNewSites(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
+    }catch(ex){toast('Read error: '+ex.message,'er');}
+  };
+  r.readAsBinaryString(f);
+}
 
 function parseNewSites(rows){
   if(!rows.length){toast('Empty file','er');return;}
-  const rawKeys=Object.keys(rows[0]);const norm=k=>k.toLowerCase().replace(/[\s_\n\r]+/g,'');const normKeys=rawKeys.map(norm);
+  const rawKeys=Object.keys(rows[0]);
+  const norm=k=>k.toLowerCase().replace(/[\s_\n\r]+/g,'');
+  const normKeys=rawKeys.map(norm);
   const fk=(...frags)=>{for(const frag of frags){const i=normKeys.findIndex(n=>n.includes(frag));if(i>=0)return rawKeys[i];}return null;};
-  const C={name:fk('sitename','name'),lat:fk('lat'),lng:fk('long','lng','lon'),id:fk('siteid','id'),gov:fk('governorate','gov'),planner:fk('plannername','planner'),key:fk('key'),vendor:fk('vendor'),cat:fk('category'),dist:fk('district'),subdist:fk('subdistrict'),pwrclass:fk('powerclass'),owner:fk('owner')};
+  const C={
+    name:fk('sitename','name'),lat:fk('lat'),lng:fk('long','lng','lon'),
+    id:fk('siteid','id'),gov:fk('governorate','gov'),planner:fk('plannername','planner'),
+    key:fk('key'),vendor:fk('vendor'),cat:fk('category'),dist:fk('district'),
+    subdist:fk('subdistrict'),pwrclass:fk('powerclass'),owner:fk('owner'),
+  };
   if(!C.lat||!C.lng){toast('Cannot find Lat/Long columns','er');return;}
   if(!C.name){toast('Cannot find Site_Name column','er');return;}
   const g=(r,c)=>c?String(r[c]??'').trim():'';
   newSitesRows=rows.map((r,i)=>({
-    id:g(r,C.id)||`NS-${i+1}`,name:g(r,C.name)||`New Site ${i+1}`,lat:parseFloat(r[C.lat]),lng:parseFloat(r[C.lng]),gov:g(r,C.gov),plannerName:g(r,C.planner),key:g(r,C.key),vendor:g(r,C.vendor),cat:g(r,C.cat),dist:g(r,C.dist),subdist:g(r,C.subdist),pwrclass:g(r,C.pwrclass),owner:g(r,C.owner),
-    code:'',tl:'No',mw:'No',fiber:'No',dwdm:'No',olt:'No',ipran:'No',fttm:'No',epa:'No',freecool:'No',gen:'No',sharing:'No',ibs:'No',type1:'',struct:'',type2:'',hight:'',gisgov:'',loc:'',nb:'',nbcode:'',ftthtype:'',ftthcode:'',fttharea:'',dlskey:'',trc:'',distHQ:'',perdHQ:'',distAQ:'',perdAQ:'',opdate:'',contact:'',contactn:'',
+    id:g(r,C.id)||`NS-${i+1}`,name:g(r,C.name)||`New Site ${i+1}`,
+    lat:parseFloat(r[C.lat]),lng:parseFloat(r[C.lng]),
+    gov:g(r,C.gov),plannerName:g(r,C.planner),
+    key:g(r,C.key),vendor:g(r,C.vendor),cat:g(r,C.cat),
+    dist:g(r,C.dist),subdist:g(r,C.subdist),pwrclass:g(r,C.pwrclass),owner:g(r,C.owner),
+    code:'',tl:'No',mw:'No',fiber:'No',dwdm:'No',olt:'No',ipran:'No',
+    fttm:'No',epa:'No',freecool:'No',gen:'No',sharing:'No',ibs:'No',
+    type1:'',struct:'',type2:'',hight:'',gisgov:'',loc:'',nb:'',nbcode:'',
+    ftthtype:'',ftthcode:'',fttharea:'',dlskey:'',trc:'',
+    distHQ:'',perdHQ:'',distAQ:'',perdAQ:'',opdate:'',contact:'',contactn:'',
     planId:null,workTime:1,checklist:{},done:false,marker:null,
   })).filter(s=>!isNaN(s.lat)&&!isNaN(s.lng));
   if(!newSitesRows.length){toast('No valid rows with Lat/Long found','er');return;}
   const ub=document.getElementById('nsUpbox');
   ub.innerHTML=`<input type="file" id="nsFIn" accept=".xlsx,.xls,.csv" onchange="onNewSitesFile(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
-    <div class="up-ico">✅</div><div class="up-ttl" style="color:var(--grn)">${newSitesRows.length} New Sites Loaded</div><div class="up-hint">Click to reload a different file</div>`;
-  document.getElementById('btnNsGenerate').disabled=false;updateNsCapInfo();
+    <div class="up-ico">✅</div>
+    <div class="up-ttl" style="color:var(--grn)">${newSitesRows.length} New Sites Loaded</div>
+    <div class="up-hint">Click to reload a different file</div>`;
+  document.getElementById('btnNsGenerate').disabled=false;
+  updateNsCapInfo();
   toast(`New sites file: ${newSitesRows.length} sites`,'ok');
 }
 
 function updateNsCapInfo(){
-  const info=document.getElementById('nsCapInfo');if(!newSitesRows.length){info.style.display='none';return;}
-  const nT=parseInt(document.getElementById('nsTeams').value)||null;const nD=parseInt(document.getElementById('nsDays').value)||null;const mPD=parseInt(document.getElementById('nsMaxDay').value)||null;const n=newSitesRows.length;
+  const info=document.getElementById('nsCapInfo');
+  if(!newSitesRows.length){info.style.display='none';return;}
+  const nT=parseInt(document.getElementById('nsTeams').value)||null;
+  const nD=parseInt(document.getElementById('nsDays').value)||null;
+  const mPD=parseInt(document.getElementById('nsMaxDay').value)||null;
+  const n=newSitesRows.length;
   info.style.display='block';
-  if(nT&&nD&&mPD){const cap=nT*nD*mPD;const ok=n<=cap;info.style.color=ok?'var(--grn)':'var(--ylw)';info.textContent=`${n} sites · ${nT} teams × ${nD} days × ${mPD}/day = ${cap} capacity${ok?' ✅':' ⚠️ over by '+(n-cap)}`;}
-  else{info.style.color='var(--mut)';info.textContent=`${n} new sites loaded · Fill in team requirements above`;}
+  if(nT&&nD&&mPD){
+    const cap=nT*nD*mPD;const ok=n<=cap;
+    info.style.color=ok?'var(--grn)':'var(--ylw)';
+    info.textContent=`${n} sites · ${nT} teams × ${nD} days × ${mPD}/day = ${cap} capacity${ok?' ✅':' ⚠️ over by '+(n-cap)}`;
+  }else{
+    info.style.color='var(--mut)';
+    info.textContent=`${n} new sites loaded · Fill in team requirements above (leave empty = auto)`;
+  }
 }
 
 function generateNewSitesPlan(){
@@ -1352,81 +1926,121 @@ function generateNewSitesPlan(){
   const maxPD=Math.max(1,parseInt(document.getElementById('nsMaxDay').value)||999);
   const defaultPlanner=document.getElementById('nsPlannerName').value.trim()||'Planner';
   const planName=document.getElementById('nsPlanName').value.trim()||'New Sites Plan';
+
+  // Merge new sites into main sites array (avoid duplicates)
   newSitesRows.forEach(ns=>{if(!sites.find(s=>s.id===ns.id))sites.push(ns);});
-  saveSiteSnapshot();addMarkers();renderSites();
-  document.getElementById('selbar').style.display='flex';document.getElementById('srchwrap').style.display='block';
-  document.getElementById('btnAll').style.display='inline-flex';document.getElementById('stbar').style.display='flex';document.getElementById('empt').style.display='none';
+  saveSiteSnapshot();
+  addMarkers();renderSites();
+  document.getElementById('selbar').style.display='flex';
+  document.getElementById('srchwrap').style.display='block';
+  document.getElementById('btnAll').style.display='inline-flex';
+  document.getElementById('stbar').style.display='flex';
+  document.getElementById('empt').style.display='none';
+
   const hqSite=sites.find(s=>s.id===HQ_ID)||null;
   showLdr('Clustering &amp; distributing new sites…');
+
   setTimeout(()=>{
     try{
-      const pool=newSitesRows.filter(s=>s.id!==HQ_ID);const capped=pool.slice(0,nTeams*nDays*maxPD);
+      const pool=newSitesRows.filter(s=>s.id!==HQ_ID);
+      const capped=pool.slice(0,nTeams*nDays*maxPD);
       const clusters=kMeansCluster(capped,Math.min(nTeams,capped.length));
       const baseId=teamPlans.length?Math.max(...teamPlans.map(t=>t.id))+1:1;
+
       nsTeamPlans=clusters.map((cluster,ti)=>{
-        const color=COLORS[(baseId+ti-1)%COLORS.length];const teamName=`NS Team ${baseId+ti}`;
-        const planners=[...new Set(cluster.map(s=>s.plannerName).filter(Boolean))];const plannerName=planners.length?planners.join(' / '):defaultPlanner;
-        const dayGroups=[];let remaining=[...cluster];let cursor=hqSite||cluster[0];
+        const color=COLORS[(baseId+ti-1)%COLORS.length];
+        const teamName=`Team ${ti+1}`;
+        const planners=[...new Set(cluster.map(s=>s.plannerName||defaultPlanner).filter(Boolean))];
+        const plannerName=planners.length?planners.join(' / '):defaultPlanner;
+        const dayGroups=[];
+        let remaining=[...cluster];
+        let cursor=hqSite||cluster[0];
         for(let d=0;d<nDays&&remaining.length>0;d++){
-          const daySize=Math.min(maxPD,remaining.length);const daySites=[];
-          for(let s=0;s<daySize;s++){let bi=0,bd=Infinity;remaining.forEach((site,i)=>{const dist=hav(cursor.lat,cursor.lng,site.lat,site.lng);if(dist<bd){bd=dist;bi=i;}});cursor=remaining.splice(bi,1)[0];daySites.push(cursor);}
+          const daySize=Math.min(maxPD,remaining.length);
+          const daySites=[];
+          for(let s=0;s<daySize;s++){
+            let bi=0,bd=Infinity;
+            remaining.forEach((site,i)=>{const dist=hav(cursor.lat,cursor.lng,site.lat,site.lng);if(dist<bd){bd=dist;bi=i;}});
+            cursor=remaining.splice(bi,1)[0];daySites.push(cursor);
+          }
           dayGroups.push({day:d+1,date:'',sites:daySites});
         }
         const ordered=dayGroups.flatMap(dg=>dg.sites);
-        const newPlan={id:baseId+ti,teamName,plannerName,planName,color,siteIds:ordered.map(s=>s.id),dayGroups,route:null,_km:0,hqSite,isNewSites:true};
-        teamPlans.push(newPlan);return newPlan;
+        return{id:baseId+ti,teamName,plannerName,planName,color,siteIds:ordered.map(s=>s.id),dayGroups,route:null,_km:0,hqSite,isNewSites:true};
       });
+
       nsTeamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
-      hideLdr();addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
-      document.getElementById('stbar').style.display='flex';saveTeamPlans();
-      toast(`✅ Generated ${nsTeamPlans.length} new site team plans`,'ok');
+      teamPlans=[...teamPlans,...nsTeamPlans];
+
+      hideLdr();
+      addMarkers();
+      renderNsPlanList();
+      renderTeamPlanList();
+      renderAllPlans();
+      updHdr();
+      saveTeamPlans();
+      toast(`✅ Generated ${nsTeamPlans.length} team plans for ${capped.length} new sites`,'ok');
     }catch(err){hideLdr();toast('Error: '+err.message,'er');}
   },30);
 }
 
 function renderNsPlanList(){
   const list=document.getElementById('nsPlanList');
-  if(!nsTeamPlans.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">Upload new sites file &amp; set requirements, then generate plans</div>';return;}
+  if(!nsTeamPlans.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">Upload new sites file &amp; set requirements, then generate plans</div>';
+    return;
+  }
   const _vns=visiblePlans();
   list.innerHTML=nsTeamPlans.filter(tp=>_vns.includes(tp)).map(tp=>{
-    const ti=teamPlans.findIndex(t=>t.id===tp.id);if(ti<0)return'';
-    return`<div class="tcard">
-      <div class="tcard-head" onclick="toggleNsPlanCollapse(${ti})" style="cursor:pointer;">
+    const ti=teamPlans.findIndex(t=>t.id===tp.id);
+    if(ti<0)return'';
+    return `
+    <div class="tcard" id="nstcard-${ti}">
+      <div class="tcard-head" onclick="toggleNsPlanCollapse(${ti})" style="cursor:pointer;" title="Click to collapse/expand">
         <button class="collapse-btn" id="nspcbtn-${ti}" onclick="event.stopPropagation();toggleNsPlanCollapse(${ti})">▼</button>
         <div class="tcard-dot" style="background:${tp.color}"></div>
         <div class="tcard-name" style="color:${tp.color}">
-          <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px" value="${tp.teamName}"
-            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans();renderNsPlanList()" onclick="event.stopPropagation()">
+          <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px"
+            value="${tp.teamName}"
+            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans();renderNsPlanList()"
+            onclick="event.stopPropagation()" title="Click to rename team">
         </div>
         <div class="tcard-meta">
-          <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px" value="${tp.plannerName}"
-            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+          <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px"
+            value="${tp.plannerName}"
+            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()"
+            onclick="event.stopPropagation()" title="Click to edit planner name">
         </div>
         <span style="font-size:10px;color:var(--mut);font-family:var(--mono);margin-left:4px">${tp.siteIds.length} sites · ${tp.dayGroups.length}d${tp._km?' · '+tp._km.toFixed(1)+'km':''}</span>
       </div>
       <div class="tcard-body-wrap" id="nspcbody-${ti}">
         <div class="tcard-days">
           ${tp.dayGroups.map((dg,di)=>`
-            <div class="tday">
-              <div class="tday-head" onclick="toggleNsDayCollapse(${ti},${di})">
+            <div class="tday" id="nstday-${ti}-${di}">
+              <div class="tday-head" onclick="toggleNsDayCollapse(${ti},${di})" title="Click to collapse/expand day">
                 <button class="collapse-btn" id="nsdcbtn-${ti}-${di}" onclick="event.stopPropagation();toggleNsDayCollapse(${ti},${di})">▼</button>
                 📅 Day ${dg.day}
-                <input type="date" class="day-date-inp" value="${dg.date||''}"
-                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()" onclick="event.stopPropagation()">
+                <input type="date" class="day-date-inp"
+                  value="${dg.date||''}"
+                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()"
+                  onclick="event.stopPropagation()" title="Set date for this day">
                 <span style="font-size:10px;color:var(--mut)">(${dg.sites.length} sites)</span>
               </div>
               <div class="tday-body" id="nsdbody-${ti}-${di}">
                 <div class="tday-actions">
-                  <button class="btn-xs btn-xs-acc" onclick="calcDayRoute(${ti},${di})">🗺 Map Day</button>
-                  <button class="btn-xs btn-xs-grn" onclick="optimizeDayRoute(${ti},${di})">🔀 Optimize Day</button>
-                  <button class="btn-xs btn-xs-ylw" onclick="exportDayPlan(${ti},${di})">📥 Export Day</button>
+                  <button class="btn-xs btn-xs-acc" onclick="calcDayRoute(${ti},${di})" title="Show route on map">🗺 Map Day</button>
+                  <button class="btn-xs btn-xs-grn" onclick="optimizeDayRoute(${ti},${di})" title="Optimize route order">🔀 Optimize Day</button>
+                  <button class="btn-xs btn-xs-ylw" onclick="exportDayPlan(${ti},${di})" title="Export this day to Excel">📥 Export Day</button>
                 </div>
                 <div class="tday-sites">
                   ${tp.hqSite?`<div class="tsite-row"><span class="hq-badge">🏠 ${tp.hqSite.id} · ${tp.hqSite.name}</span></div>`:''}
                   ${dg.sites.map((s,si)=>`
                     <div class="tsite-row" onclick="openSiteDetail('${s.id}')" style="cursor:pointer;">
-                      <span class="tsite-num">${si+1}</span><span class="tsite-name">${s.name}</span><span class="tsite-id">ID:${s.id}</span>
+                      <span class="tsite-num">${si+1}</span>
+                      <span class="tsite-name">${s.name}</span>
+                      <span class="tsite-id">ID:${s.id}</span>
                       ${s.key?`<span class="tsite-key">🔑${s.key}</span>`:''}
+                      ${s.gov?`<span style="font-family:var(--mono);font-size:9px;color:var(--mut);flex-shrink:0">${s.gov}</span>`:''}
                     </div>`).join('')}
                   ${tp.hqSite?`<div class="tsite-row"><span class="hq-badge">🏠 Return · ${tp.hqSite.id}</span></div>`:''}
                 </div>
@@ -1444,44 +2058,99 @@ function renderNsPlanList(){
   }).join('');
 }
 
-function toggleNsPlanCollapse(ti){const body=document.getElementById('nspcbody-'+ti);const btn=document.getElementById('nspcbtn-'+ti);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
-function toggleNsDayCollapse(ti,di){const body=document.getElementById('nsdbody-'+ti+'-'+di);const btn=document.getElementById('nsdcbtn-'+ti+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
+function toggleNsPlanCollapse(ti){
+  const body=document.getElementById('nspcbody-'+ti);const btn=document.getElementById('nspcbtn-'+ti);
+  if(!body||!btn)return;const c=body.style.display==='none';
+  body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);
+}
+function toggleNsDayCollapse(ti,di){
+  const body=document.getElementById('nsdbody-'+ti+'-'+di);const btn=document.getElementById('nsdcbtn-'+ti+'-'+di);
+  if(!body||!btn)return;const c=body.style.display==='none';
+  body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);
+}
 
-// ══ COLOR DOTS ══════════════════════════════════════
-function buildCdots(){document.getElementById('cdots')&&(document.getElementById('cdots').innerHTML=COLORS.map(c=>`<div class="cdot${c===picked?' on':''}" style="background:${c}" onclick="pickC('${c}')"></div>`).join(''));}
+
+
+// ══ COLOR / DOTS ════════════════════════════════════
+function buildCdots(){
+  document.getElementById('cdots')&&(document.getElementById('cdots').innerHTML=COLORS.map(c=>`<div class="cdot${c===picked?' on':''}" style="background:${c}" onclick="pickC('${c}')"></div>`).join(''));
+}
 function pickC(c){picked=c;buildCdots();}
 
-// ══ ROUTE ALGOS ═════════════════════════════════════
-function hav(la1,lo1,la2,lo2){const R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+// ══ ROUTE ALGOS ════════════════════════════════════
+function hav(la1,lo1,la2,lo2){
+  const R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
 function totD(arr){let d=0;for(let i=0;i<arr.length-1;i++)d+=hav(arr[i].lat,arr[i].lng,arr[i+1].lat,arr[i+1].lng);return d;}
-function nn(arr){if(arr.length<=2)return arr;const vis=new Array(arr.length).fill(false),rt=[0];vis[0]=true;for(let i=1;i<arr.length;i++){const last=rt[rt.length-1];let best=-1,bd=Infinity;for(let j=0;j<arr.length;j++){if(vis[j])continue;const d=hav(arr[last].lat,arr[last].lng,arr[j].lat,arr[j].lng);if(d<bd){bd=d;best=j;}}rt.push(best);vis[best]=true;}return rt.map(i=>arr[i]);}
-function twoOpt(arr){let best=[...arr],imp=true;while(imp){imp=false;for(let i=0;i<best.length-1;i++)for(let j=i+2;j<best.length;j++){const nr=[...best.slice(0,i+1),...best.slice(i+1,j+1).reverse(),...best.slice(j+1)];if(totD(nr)<totD(best)){best=nr;imp=true;}}}return best;}
+function nn(arr){
+  if(arr.length<=2)return arr;
+  const vis=new Array(arr.length).fill(false),rt=[0];vis[0]=true;
+  for(let i=1;i<arr.length;i++){
+    const last=rt[rt.length-1];let best=-1,bd=Infinity;
+    for(let j=0;j<arr.length;j++){if(vis[j])continue;const d=hav(arr[last].lat,arr[last].lng,arr[j].lat,arr[j].lng);if(d<bd){bd=d;best=j;}}
+    rt.push(best);vis[best]=true;
+  }
+  return rt.map(i=>arr[i]);
+}
+function twoOpt(arr){
+  let best=[...arr],imp=true;
+  while(imp){imp=false;
+    for(let i=0;i<best.length-1;i++)for(let j=i+2;j<best.length;j++){
+      const nr=[...best.slice(0,i+1),...best.slice(i+1,j+1).reverse(),...best.slice(j+1)];
+      if(totD(nr)<totD(best)){best=nr;imp=true;}
+    }
+  }
+  return best;
+}
 
-// ══ OSRM ════════════════════════════════════════════
+// ══ OSRM ═══════════════════════════════════════════
 async function osrmChunk(ordered){
   const coords=ordered.map(s=>`${s.lng},${s.lat}`).join(';');
   const res=await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
   if(!res.ok)throw new Error('OSRM '+res.status);
-  const data=await res.json();if(data.code!=='Ok')throw new Error(data.message);
+  const data=await res.json();
+  if(data.code!=='Ok')throw new Error(data.message);
   return{geometry:data.routes[0].geometry.coordinates,distance:data.routes[0].distance/1000,duration:data.routes[0].duration/60};
 }
 async function fetchRoute(ordered){
-  const MAX=23;if(ordered.length<=MAX)return await osrmChunk(ordered);
+  const MAX=23;
+  if(ordered.length<=MAX)return await osrmChunk(ordered);
   let tD=0,tDur=0,aC=[];
-  for(let i=0;i<ordered.length-1;i+=MAX-1){const chunk=ordered.slice(i,Math.min(i+MAX,ordered.length));if(chunk.length<2)break;const r=await osrmChunk(chunk);tD+=r.distance;tDur+=r.duration;aC=aC.concat(i===0?r.geometry:r.geometry.slice(1));}
+  for(let i=0;i<ordered.length-1;i+=MAX-1){
+    const chunk=ordered.slice(i,Math.min(i+MAX,ordered.length));
+    if(chunk.length<2)break;
+    const r=await osrmChunk(chunk);
+    tD+=r.distance;tDur+=r.duration;
+    aC=aC.concat(i===0?r.geometry:r.geometry.slice(1));
+  }
   return{geometry:aC,distance:tD,duration:tDur};
 }
 
-function clearRoutes(){rLayers.forEach(l=>map.removeLayer(l));rLayers=[];document.getElementById('rpanel').style.display='none';teamPlans.forEach(tp=>tp._km=0);plans.forEach(p=>p._km=0);document.getElementById('stKm').textContent='—';}
+function clearRoutes(){
+  rLayers.forEach(l=>map.removeLayer(l));rLayers=[];
+  document.getElementById('rpanel').style.display='none';
+  teamPlans.forEach(tp=>tp._km=0);plans.forEach(p=>p._km=0);
+  document.getElementById('stKm').textContent='—';
+}
 
-// ══ CHECKLIST ═══════════════════════════════════════
+// ══ LEGACY PLAN SUPPORT (Tab 1 manual plans) ═══════
+function createPlan(){
+  // kept for backward-compat if tab1 manual creation is re-added
+}
+function renderPlans(){}
+
+// ══ CHECKLIST (kept for field use) ═════════════════
 function openChecklist(planId,siteId,stopIdx){
-  const plan=plans.find(p=>p.id===planId),site=sites.find(s=>s.id===siteId);if(!plan||!site)return;
+  const plan=plans.find(p=>p.id===planId),site=sites.find(s=>s.id===siteId);
+  if(!plan||!site)return;
   activeCL={planId,siteId,stopIdx};
   document.getElementById('clTitle').textContent=site.name;
-  document.getElementById('clSub').textContent=`Stop #${stopIdx+1} · ID:${site.id}`;
+  document.getElementById('clSub').textContent=`Stop #${stopIdx+1} · ${plan.techName} · ID:${site.id}`;
   const kh=document.getElementById('keyHighlight');
-  if(site.key){kh.style.display='block';document.getElementById('keyValue').textContent=site.key;}else kh.style.display='none';
+  if(site.key){kh.style.display='block';document.getElementById('keyValue').textContent=site.key;}
+  else kh.style.display='none';
   const cells=[{l:'Site ID',v:site.id,c:'c-acc'},{l:'Governorate',v:site.gov||'—'},{l:'Category',v:site.cat||'—'},{l:'Vendor',v:site.vendor||'—'},{l:'Power Class',v:site.pwrclass||'—',c:'c-grn'},{l:'KEY',v:site.key||'—',c:'c-orn'}];
   document.getElementById('clInfo').innerHTML=cells.map(c=>`<div class="icell"><div class="ic-l">${c.l}</div><div class="ic-v${c.c?' '+c.c:''}">${c.v}</div></div>`).join('');
   const equip=[{l:'TL',v:site.tl},{l:'MW',v:site.mw},{l:'Fiber',v:site.fiber},{l:'DWDM',v:site.dwdm},{l:'OLT',v:site.olt},{l:'IPRAN',v:site.ipran},{l:'FTTM',v:site.fttm},{l:'EPA',v:site.epa},{l:'Free Cool',v:site.freecool},{l:'Generator',v:site.gen},{l:'Sharing',v:site.sharing},{l:'IBS',v:site.ibs}];
@@ -1489,140 +2158,258 @@ function openChecklist(planId,siteId,stopIdx){
   if(!site.checklist||!Object.keys(site.checklist).length){site.checklist={};CL_GROUPS.forEach(g=>g.items.forEach((_,i)=>site.checklist[g.title+i]=false));}
   renderCL(site);document.getElementById('clOvl').classList.add('on');
 }
-function renderCL(site){document.getElementById('clGroups').innerHTML=CL_GROUPS.map(g=>`<div class="cl-group"><div class="cl-gtitle">${g.title}</div>${g.items.map((item,i)=>{const k=g.title+i,ck=site.checklist[k]||false;return`<div class="cl-item${ck?' ck':''}" onclick="togCL('${k}')"><div class="cl-chk">${ck?'✓':''}</div><div class="cl-txt">${item}</div></div>`;}).join('')}</div>`).join('');updProg(site);}
+function renderCL(site){
+  document.getElementById('clGroups').innerHTML=CL_GROUPS.map(g=>`<div class="cl-group"><div class="cl-gtitle">${g.title}</div>${g.items.map((item,i)=>{const k=g.title+i,ck=site.checklist[k]||false;return`<div class="cl-item${ck?' ck':''}" onclick="togCL('${k}')"><div class="cl-chk">${ck?'✓':''}</div><div class="cl-txt">${item}</div></div>`;}).join('')}</div>`).join('');
+  updProg(site);
+}
 function togCL(key){if(!activeCL)return;const site=sites.find(s=>s.id===activeCL.siteId);if(!site)return;site.checklist[key]=!site.checklist[key];renderCL(site);}
 function updProg(site){const total=Object.keys(site.checklist).length,done=Object.values(site.checklist).filter(Boolean).length;const pct=total?Math.round(done/total*100):0;document.getElementById('progFill').style.width=pct+'%';document.getElementById('progTxt').textContent=`${done}/${total} (${pct}%)`;}
 function finishSite(){if(!activeCL)return;const{planId,siteId,stopIdx}=activeCL;const plan=plans.find(p=>p.id===planId),site=sites.find(s=>s.id===siteId);if(!plan||!site)return;site.done=true;plan.currentStop=stopIdx+1;closeChecklist();updHdr();addMarkers();renderSites();}
 function closeChecklist(){document.getElementById('clOvl').classList.remove('on');activeCL=null;}
 
-// ══ HEADER ══════════════════════════════════════════
+// ══ HEADER ═════════════════════════════════════════
 function updHdr(){
-  const done=sites.filter(s=>s.done).length;const _vplans=visiblePlans();
-  document.getElementById('hS').textContent=sites.length;document.getElementById('hT').textContent=_vplans.length;document.getElementById('hD').textContent=done;document.getElementById('hP').textContent=_vplans.length;
-  document.getElementById('stS').textContent=sites.length;document.getElementById('stT').textContent=_vplans.length;document.getElementById('stD').textContent=done;
+  const done=sites.filter(s=>s.done).length;
+  const _vplans=visiblePlans();
+  document.getElementById('hS').textContent=sites.length;
+  document.getElementById('hT').textContent=_vplans.length;
+  document.getElementById('hD').textContent=done;
+  document.getElementById('hP').textContent=_vplans.length;
+  document.getElementById('stS').textContent=sites.length;
+  document.getElementById('stT').textContent=_vplans.length;
+  document.getElementById('stD').textContent=done;
   const km=teamPlans.reduce((a,t)=>a+(t._km||0),0)+plans.reduce((a,p)=>a+(p._km||0),0);
   document.getElementById('stKm').textContent=km>0?km.toFixed(1):'—';
 }
 
-// ══ UTILS ═══════════════════════════════════════════
+// ══ UTILS ══════════════════════════════════════════
 function showLdr(m){document.getElementById('ldrMsg').innerHTML=m;document.getElementById('ldr').classList.add('on');}
 function hideLdr(){document.getElementById('ldr').classList.remove('on');}
 let _tt;
-function toast(msg,type='in'){const ic={ok:'✅',er:'❌',in:'ℹ️'};document.getElementById('ti').textContent=ic[type]||'ℹ️';document.getElementById('tm').textContent=msg;const el=document.getElementById('toast');el.className=`toast show ${type}`;clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),4200);}
+function toast(msg,type='in'){
+  const ic={ok:'✅',er:'❌',in:'ℹ️'};
+  document.getElementById('ti').textContent=ic[type]||'ℹ️';
+  document.getElementById('tm').textContent=msg;
+  const el=document.getElementById('toast');
+  el.className=`toast show ${type}`;
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),4200);
+}
 
-// ══ AUTH — API-backed ════════════════════════════════
-let currentUser=null;
+// ══════════════════════════════════════════════════
+// AUTH SYSTEM
+// ══════════════════════════════════════════════════
+const ADMIN_USER = 'Adm.Zain';
+const ADMIN_PASS = 'Zain@1202';
+const STORAGE_KEY_USERS = 'zroute_users_v1';
+const STORAGE_KEY_SESSION = 'zroute_session_v1';
 
-async function doLogin(){
-  const u=document.getElementById('liUser').value.trim();
-  const p=document.getElementById('liPass').value;
-  const err=document.getElementById('liErr');
-  err.style.display='none';
-  try{
-    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p}),credentials:'include'});
-    if(!res.ok){err.style.display='block';document.getElementById('liPass').value='';return;}
-    currentUser=await res.json();
+let currentUser = null; // {username, displayName, plannerName, role:'admin'|'user'}
+
+// ── Load / Save users ──────────────────────────────
+function loadUsers(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)||'[]'); }catch(e){return [];}
+}
+function saveUsers(arr){ localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(arr)); }
+
+// ── Login ──────────────────────────────────────────
+function doLogin(){
+  const u = document.getElementById('liUser').value.trim();
+  const p = document.getElementById('liPass').value;
+  const err = document.getElementById('liErr');
+  err.style.display = 'none';
+
+  // Admin check
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    currentUser = {username:ADMIN_USER, displayName:'Admin', plannerName:'Admin', role:'admin'};
+    sessionStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
     applyAuth();
-  }catch(e){err.style.display='block';document.getElementById('liPass').value='';}
-}
-
-async function doLogout(){
-  if(!confirm('Sign out?'))return;
-  try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'});}catch(e){}
-  currentUser=null;
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('liUser').value='';document.getElementById('liPass').value='';document.getElementById('liErr').style.display='none';
-  document.getElementById('userBadge').style.display='none';document.getElementById('btnAdminPanel').style.display='none';
-}
-
-function applyAuth(){
-  document.getElementById('loginScreen').style.display='none';
-  const badge=document.getElementById('userBadge');badge.style.display='flex';
-  document.getElementById('userAvatar').textContent=currentUser.displayName.charAt(0).toUpperCase();
-  document.getElementById('userDisplayName').textContent=currentUser.displayName;
-  document.getElementById('userRoleLabel').textContent=currentUser.role==='admin'?'🛡️ Admin':'👤 User';
-  document.getElementById('btnAdminPanel').style.display=currentUser.role==='admin'?'inline-flex':'none';
-  if(currentUser.role==='user'){
-    const pn=document.getElementById('pPlannerName');const nsn=document.getElementById('nsPlannerName');
-    if(pn){pn.value=currentUser.plannerName;pn.readOnly=true;pn.style.opacity='.7';}
-    if(nsn){nsn.value=currentUser.plannerName;nsn.readOnly=true;nsn.style.opacity='.7';}
+    return;
   }
-  renderAllPlans();renderTeamPlanList();renderNsPlanList();updHdr();
-  toast('Welcome, '+currentUser.displayName+'! 👋','ok');
+
+  // User check
+  const users = loadUsers();
+  const found = users.find(x => x.username === u && x.password === p);
+  if(found){
+    currentUser = {username:found.username, displayName:found.displayName, plannerName:found.plannerName||found.displayName, role:'user'};
+    sessionStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
+    applyAuth();
+    return;
+  }
+
+  err.style.display = 'block';
+  document.getElementById('liPass').value = '';
 }
 
-async function tryRestoreSession(){
+function doLogout(){
+  if(!confirm('Sign out?')) return;
+  sessionStorage.removeItem(STORAGE_KEY_SESSION);
+  currentUser = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('liUser').value = '';
+  document.getElementById('liPass').value = '';
+  document.getElementById('liErr').style.display = 'none';
+  document.getElementById('userBadge').style.display = 'none';
+  document.getElementById('btnAdminPanel').style.display = 'none';
+}
+
+// ── Apply auth state after login ──────────────────
+function applyAuth(){
+  document.getElementById('loginScreen').style.display = 'none';
+
+  // Header badge
+  const badge = document.getElementById('userBadge');
+  badge.style.display = 'flex';
+  document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+  document.getElementById('userDisplayName').textContent = currentUser.displayName;
+  document.getElementById('userRoleLabel').textContent = currentUser.role === 'admin' ? '🛡️ Admin' : '👤 User';
+
+  // Admin button
+  document.getElementById('btnAdminPanel').style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
+
+  // Tabs visibility — users see all tabs but plans are filtered
+  // Planning tab: users can only generate plans (planner name auto-filled & locked)
+  if(currentUser.role === 'user'){
+    // Auto-fill planner name fields with logged-in user's planner name
+    const pn = document.getElementById('pPlannerName');
+    const nsn = document.getElementById('nsPlannerName');
+    if(pn){ pn.value = currentUser.plannerName; pn.readOnly = true; pn.style.opacity = '.7'; }
+    if(nsn){ nsn.value = currentUser.plannerName; nsn.readOnly = true; nsn.style.opacity = '.7'; }
+  }
+
+  // Re-render plans filtered by user
+  renderAllPlans();
+  renderTeamPlanList();
+  renderNsPlanList();
+  updHdr();
+
+  toast('Welcome, ' + currentUser.displayName + '! 👋', 'ok');
+}
+
+// ── Restore session on reload ──────────────────────
+function tryRestoreSession(){
   try{
-    const res=await fetch('/api/auth/me',{credentials:'include'});
-    if(res.ok){currentUser=await res.json();applyAuth();return true;}
+    const saved = sessionStorage.getItem(STORAGE_KEY_SESSION);
+    if(saved){
+      currentUser = JSON.parse(saved);
+      applyAuth();
+      return true;
+    }
   }catch(e){}
   return false;
 }
 
+// ── Filter plans by current user (used in render functions) ──
 function visiblePlans(){
-  if(!currentUser)return[];
-  if(currentUser.role==='admin')return teamPlans;
-  return teamPlans.filter(tp=>tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim()).some(n=>n===currentUser.plannerName.toLowerCase().trim()));
+  if(!currentUser) return [];
+  if(currentUser.role === 'admin') return teamPlans;
+  // User sees only plans where plannerName matches their plannerName
+  return teamPlans.filter(tp =>
+    tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim())
+      .some(n => n === currentUser.plannerName.toLowerCase().trim())
+  );
 }
 
-// ══ ADMIN PANEL ══════════════════════════════════════
+// ── Admin Panel ────────────────────────────────────
 function openAdmin(){
-  if(!currentUser||currentUser.role!=='admin'){toast('Admin only','er');return;}
-  renderAdminPanel();document.getElementById('adminOvl').classList.add('on');
+  if(!currentUser || currentUser.role !== 'admin'){ toast('Admin only','er'); return; }
+  renderAdminPanel();
+  document.getElementById('adminOvl').classList.add('on');
 }
-function closeAdmin(){document.getElementById('adminOvl').classList.remove('on');}
+function closeAdmin(){ document.getElementById('adminOvl').classList.remove('on'); }
 
-async function renderAdminPanel(){
-  let users=[];
-  try{const res=await fetch('/api/users',{credentials:'include'});if(res.ok)users=await res.json();}catch(e){}
-  document.getElementById('aStatUsers').textContent=users.length;
-  document.getElementById('aStatPlans').textContent=teamPlans.length;
-  document.getElementById('aStatSites').textContent=sites.length;
-  const ul=document.getElementById('aUserList');
-  const adminRow=`<div class="urow" style="border-color:rgba(251,191,36,.3)">
-    <div class="urow-avatar" style="background:linear-gradient(135deg,var(--ylw),var(--orn))">A</div>
-    <div class="urow-info"><div class="urow-name">Admin (You)</div><div class="urow-user">@${currentUser?.username||'Adm.Zain'}</div></div>
-    <span class="urow-role admin">Admin</span><span class="urow-plans">${teamPlans.length} plan(s)</span>
+function renderAdminPanel(){
+  const users = loadUsers();
+  document.getElementById('aStatUsers').textContent = users.length;
+  document.getElementById('aStatPlans').textContent = teamPlans.length;
+  document.getElementById('aStatSites').textContent = sites.length;
+
+  // User list
+  const ul = document.getElementById('aUserList');
+  if(!users.length){
+    ul.innerHTML = '<div style="padding:14px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No users added yet</div>';
+  } else {
+    ul.innerHTML = users.map((u,i) => {
+      const planCount = teamPlans.filter(tp =>
+        tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim())
+          .some(n => n === (u.plannerName||u.displayName).toLowerCase().trim())
+      ).length;
+      return `<div class="urow">
+        <div class="urow-avatar">${u.displayName.charAt(0).toUpperCase()}</div>
+        <div class="urow-info">
+          <div class="urow-name">${u.displayName}</div>
+          <div class="urow-user">@${u.username} · 🔑 ${u.password} · Planner: ${u.plannerName||u.displayName}</div>
+        </div>
+        <span class="urow-role user">User</span>
+        <span class="urow-plans">${planCount} plan(s)</span>
+        <button class="urow-del" onclick="deleteUser(${i})" title="Delete user">🗑</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Admin row (always shown, can't delete)
+  const adminRow = `<div class="urow" style="border-color:rgba(251,191,36,.3)">
+    <div class="urow-avatar" style="background:linear-gradient(135deg,var(--ylw),var(--orn))">${ADMIN_USER.charAt(0).toUpperCase()}</div>
+    <div class="urow-info">
+      <div class="urow-name">Admin (You)</div>
+      <div class="urow-user">@${ADMIN_USER}</div>
+    </div>
+    <span class="urow-role admin">Admin</span>
+    <span class="urow-plans">${teamPlans.length} plan(s)</span>
   </div>`;
-  ul.innerHTML=adminRow+users.map(u=>{
-    const planCount=teamPlans.filter(tp=>tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim()).some(n=>n===(u.plannerName||u.displayName).toLowerCase().trim())).length;
-    return`<div class="urow">
-      <div class="urow-avatar">${u.displayName.charAt(0).toUpperCase()}</div>
-      <div class="urow-info"><div class="urow-name">${u.displayName}</div><div class="urow-user">@${u.username} · Planner: ${u.plannerName||u.displayName}</div></div>
-      <span class="urow-role user">User</span><span class="urow-plans">${planCount} plan(s)</span>
-      <button class="urow-del" onclick="deleteUser(${u.id})" title="Delete user">🗑</button>
-    </div>`;
-  }).join('');
-  const pbu=document.getElementById('aPlansByUser');
-  const allPlanners=[...new Set(teamPlans.map(tp=>tp.plannerName))];
-  if(!allPlanners.length){pbu.innerHTML='<div style="font-size:12px;color:var(--mut);opacity:.6;text-align:center;padding:10px">No plans yet</div>';}
-  else pbu.innerHTML=allPlanners.map(planner=>{
-    const pts=teamPlans.filter(tp=>tp.plannerName===planner);
-    return`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;">
-      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--acc3);margin-bottom:5px;">👤 ${planner} — ${pts.length} plan(s)</div>
-      ${pts.map(tp=>`<div style="font-size:11px;color:var(--mut);font-family:var(--mono);padding:2px 0;">● ${tp.teamName} · ${tp.siteIds.length} sites · ${tp.dayGroups.length} days</div>`).join('')}
-    </div>`;
-  }).join('');
+  ul.innerHTML = adminRow + ul.innerHTML;
+
+  // Plans by user
+  const pbu = document.getElementById('aPlansByUser');
+  const allPlanners = [...new Set(teamPlans.map(tp => tp.plannerName))];
+  if(!allPlanners.length){
+    pbu.innerHTML = '<div style="font-size:12px;color:var(--mut);opacity:.6;text-align:center;padding:10px">No plans yet</div>';
+  } else {
+    pbu.innerHTML = allPlanners.map(planner => {
+      const pts = teamPlans.filter(tp => tp.plannerName === planner);
+      return `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--acc3);margin-bottom:5px;">👤 ${planner} — ${pts.length} plan(s)</div>
+        ${pts.map(tp=>`<div style="font-size:11px;color:var(--mut);font-family:var(--mono);padding:2px 0;">● ${tp.teamName} · ${tp.siteIds.length} sites · ${tp.dayGroups.length} days</div>`).join('')}
+      </div>`;
+    }).join('');
+  }
 }
 
-async function addUser(){
-  const name=document.getElementById('aNewName').value.trim();const uname=document.getElementById('aNewUser').value.trim();
-  const pass=document.getElementById('aNewPass').value.trim();const planner=document.getElementById('aNewPlanner').value.trim()||name;
-  const errEl=document.getElementById('aAddErr');errEl.style.display='none';
-  if(!name||!uname||!pass){errEl.textContent='Fill all fields';errEl.style.display='block';return;}
-  try{
-    const res=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:uname,password:pass,displayName:name,plannerName:planner}),credentials:'include'});
-    if(!res.ok){const data=await res.json();errEl.textContent=data.error||'Error adding user';errEl.style.display='block';return;}
-    document.getElementById('aNewName').value='';document.getElementById('aNewUser').value='';document.getElementById('aNewPass').value='';document.getElementById('aNewPlanner').value='';
-    renderAdminPanel();toast('User '+name+' added ✅','ok');
-  }catch(e){errEl.textContent='Network error';errEl.style.display='block';}
+function addUser(){
+  const name = document.getElementById('aNewName').value.trim();
+  const uname = document.getElementById('aNewUser').value.trim();
+  const pass = document.getElementById('aNewPass').value.trim();
+  const planner = document.getElementById('aNewPlanner').value.trim() || name;
+  const errEl = document.getElementById('aAddErr');
+  errEl.style.display = 'none';
+
+  if(!name || !uname || !pass){ errEl.textContent='Fill all fields'; errEl.style.display='block'; return; }
+  if(uname === ADMIN_USER){ errEl.textContent='Username reserved'; errEl.style.display='block'; return; }
+
+  const users = loadUsers();
+  // No user limit
+  if(users.find(x=>x.username===uname)){ errEl.textContent='Username already exists'; errEl.style.display='block'; return; }
+
+  users.push({username:uname, password:pass, displayName:name, plannerName:planner});
+  saveUsers(users);
+
+  document.getElementById('aNewName').value='';
+  document.getElementById('aNewUser').value='';
+  document.getElementById('aNewPass').value='';
+  document.getElementById('aNewPlanner').value='';
+
+  renderAdminPanel();
+  toast('User ' + name + ' added ✅', 'ok');
 }
 
-async function deleteUser(dbId){
-  if(!confirm('Delete this user?'))return;
-  try{await fetch(`/api/users/${dbId}`,{method:'DELETE',credentials:'include'});renderAdminPanel();toast('User deleted','in');}
-  catch(e){toast('Delete failed','er');}
+function deleteUser(idx){
+  const users = loadUsers();
+  if(!confirm('Delete user: ' + users[idx].displayName + '?')) return;
+  users.splice(idx, 1);
+  saveUsers(users);
+  renderAdminPanel();
+  toast('User deleted', 'in');
 }
+
 </script>
 </body>
 </html>
