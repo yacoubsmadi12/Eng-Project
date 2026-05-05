@@ -11,12 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function UsersTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ username: "", password: "", displayName: "", plannerName: "" });
+  const [form, setForm] = useState({ username: "", password: "", displayName: "", plannerName: "", role: "user" });
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
@@ -28,7 +29,7 @@ function UsersTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
       setShowAdd(false);
-      setForm({ username: "", password: "", displayName: "", plannerName: "" });
+      setForm({ username: "", password: "", displayName: "", plannerName: "", role: "user" });
       toast({ title: "User created" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -65,6 +66,8 @@ function UsersTab() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{u.displayName}</span>
                   {u.role === "admin" && <Badge variant="secondary" className="text-xs py-0">Admin</Badge>}
+                  {u.role === "viewer" && <Badge className="text-xs py-0 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">Viewer</Badge>}
+                  {u.role === "user" && <Badge variant="outline" className="text-xs py-0">User</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">@{u.username} · {u.plannerName}</p>
               </div>
@@ -105,6 +108,18 @@ function UsersTab() {
                 />
               </div>
             ))}
+            <div className="space-y-1.5">
+              <Label>Role & Permissions</Label>
+              <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User — sees only their own plans</SelectItem>
+                  <SelectItem value="viewer">Viewer — sees all plans + can export Excel (read-only)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>

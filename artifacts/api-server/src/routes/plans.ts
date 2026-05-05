@@ -28,7 +28,7 @@ router.get("/plans", requireAuth, async (req, res) => {
     siteIds: r.siteIds,
   }));
 
-  if (user.role === "admin") {
+  if (user.role === "admin" || user.role === "viewer") {
     res.json(plans);
   } else {
     const pname = user.plannerName.toLowerCase().trim();

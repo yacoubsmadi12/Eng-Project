@@ -25,20 +25,22 @@ router.get("/users", requireAdmin, async (_req, res) => {
 });
 
 router.post("/users", requireAdmin, async (req, res) => {
-  const { username, password, displayName, plannerName } = req.body as {
-    username: string; password: string; displayName: string; plannerName: string;
+  const { username, password, displayName, plannerName, role } = req.body as {
+    username: string; password: string; displayName: string; plannerName: string; role?: string;
   };
   if (!username || !password || !displayName) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
+  const allowedRoles = ["user", "viewer"];
+  const assignedRole = allowedRoles.includes(role ?? "") ? role! : "user";
   const existing = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
   if (existing.length) {
     res.status(400).json({ error: "Username already exists" });
     return;
   }
   const [created] = await db.insert(usersTable).values({
-    username, password, displayName, plannerName: plannerName || displayName, role: "user"
+    username, password, displayName, plannerName: plannerName || displayName, role: assignedRole
   }).returning({
     id: usersTable.id, username: usersTable.username,
     displayName: usersTable.displayName, plannerName: usersTable.plannerName, role: usersTable.role

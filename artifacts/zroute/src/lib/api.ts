@@ -41,7 +41,7 @@ export const api = {
   },
   users: {
     list: () => req<any[]>("GET", "/users"),
-    create: (data: { username: string; password: string; displayName: string; plannerName: string }) =>
+    create: (data: { username: string; password: string; displayName: string; plannerName: string; role?: string }) =>
       req<any>("POST", "/users", data),
     delete: (id: number) => req<{ message: string }>("DELETE", `/users/${id}`),
   },

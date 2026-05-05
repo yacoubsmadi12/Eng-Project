@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuth } from "@/context/auth";
 import { api } from "@/lib/api";
+import { exportSinglePlan, exportAllPlans } from "@/lib/export";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-function PlanCard({ plan }: { plan: any }) {
+function PlanCard({ plan, sites, canExport }: { plan: any; sites: any[]; canExport: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const dayGroups: any[] = Array.isArray(plan.dayGroups) ? plan.dayGroups : [];
   const siteCount = Array.isArray(plan.siteIds) ? plan.siteIds.length : 0;
@@ -34,14 +35,30 @@ function PlanCard({ plan }: { plan: any }) {
               <p className="text-xs text-muted-foreground mt-1 ml-5">{plan.planName}</p>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs h-7 px-2 flex-shrink-0"
-            onClick={() => setExpanded(v => !v)}
-          >
-            {expanded ? "Hide" : "Details"}
-          </Button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {canExport && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs h-7 px-2"
+                title="Export to Excel"
+                onClick={() => exportSinglePlan(plan, sites)}
+              >
+                <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Excel
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 px-2 flex-shrink-0"
+              onClick={() => setExpanded(v => !v)}
+            >
+              {expanded ? "Hide" : "Details"}
+            </Button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-3 mt-2 ml-5">
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -84,7 +101,7 @@ function PlanCard({ plan }: { plan: any }) {
           <CardContent className="pt-3 pb-3">
             <div className="space-y-2">
               {dayGroups.map((dg: any, i: number) => {
-                const ids: string[] = Array.isArray(dg.siteIds) ? dg.siteIds : [];
+                const ids: string[] = Array.isArray(dg.siteIds) ? dg.siteIds : (Array.isArray(dg.sites) ? dg.sites.map((s: any) => s.id ?? s) : []);
                 return (
                   <div key={i} className="flex items-start gap-3 text-xs">
                     <span className="flex-shrink-0 w-16 font-medium text-muted-foreground pt-0.5">
@@ -115,12 +132,22 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [search, setSearch] = useState("");
 
+  const isAdmin = user?.role === "admin";
+  const isViewer = user?.role === "viewer";
+  const canExport = isAdmin || isViewer;
+
   const { data: plans = [], isLoading, error } = useQuery({
     queryKey: ["plans"],
     queryFn: () => api.plans.list(),
   });
 
-  const filtered = plans.filter((p: any) => {
+  const { data: sites = [] } = useQuery({
+    queryKey: ["sites"],
+    queryFn: () => api.sites.list(),
+    enabled: canExport,
+  });
+
+  const filtered = (plans as any[]).filter((p: any) => {
     const q = search.toLowerCase();
     return (
       p.teamName?.toLowerCase().includes(q) ||
@@ -146,7 +173,8 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">
               {user?.displayName}
-              {user?.role === "admin" && <Badge className="ml-2 text-xs py-0" variant="secondary">Admin</Badge>}
+              {isAdmin && <Badge className="ml-2 text-xs py-0" variant="secondary">Admin</Badge>}
+              {isViewer && <Badge className="ml-2 text-xs py-0 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">Viewer</Badge>}
             </span>
             <Button variant="outline" size="sm" onClick={logout}>
               Sign Out
@@ -159,33 +187,47 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-5 gap-4">
           <div>
             <h2 className="text-xl font-bold">
-              {user?.role === "admin" ? "All Plans" : "My Plans"}
+              {isAdmin ? "All Plans" : isViewer ? "All Plans" : "My Plans"}
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {plans.length} plan{plans.length !== 1 ? "s" : ""} available
+              {(plans as any[]).length} plan{(plans as any[]).length !== 1 ? "s" : ""} available
             </p>
           </div>
-          {user?.role === "admin" && (
-            <div className="flex items-center gap-2">
-              <a href="/generate">
-                <Button variant="outline" size="sm">
-                  <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Generate Plans
-                </Button>
-              </a>
-              <a href="/admin">
-                <Button variant="outline" size="sm">
-                  <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                  Admin Panel
-                </Button>
-              </a>
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {canExport && (plans as any[]).length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportAllPlans(plans as any[], sites as any[])}
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Export All
+              </Button>
+            )}
+            {isAdmin && (
+              <>
+                <a href="/generate">
+                  <Button variant="outline" size="sm">
+                    <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Generate Plans
+                  </Button>
+                </a>
+                <a href="/admin">
+                  <Button variant="outline" size="sm">
+                    <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Admin Panel
+                  </Button>
+                </a>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="mb-4">
@@ -221,7 +263,7 @@ export default function DashboardPage() {
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((plan: any) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard key={plan.id} plan={plan} sites={sites as any[]} canExport={canExport} />
           ))}
         </div>
       </main>
