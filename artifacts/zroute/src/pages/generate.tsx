@@ -60,56 +60,66 @@ function CapInfo({ n, nT, nD, mPD }: { n: number; nT: number; nD: number; mPD: n
   );
 }
 
+function PlanNameBar({ planName, onChange }: { planName: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-0 border rounded-md overflow-hidden bg-card">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2 whitespace-nowrap border-r">
+        Plan Name
+      </span>
+      <Input
+        type="text"
+        placeholder="e.g. Q2 Field Campaign 2025"
+        value={planName}
+        onChange={e => onChange(e.target.value)}
+        className="h-auto border-0 rounded-none text-sm py-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+      />
+    </div>
+  );
+}
+
+function HqIdBar({ hqId, onHqIdChange }: { hqId: string; onHqIdChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-0 border rounded-md overflow-hidden bg-card">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2 whitespace-nowrap border-r">
+        🏠 Start Site ID
+      </span>
+      <Input
+        type="text"
+        placeholder="e.g. 911"
+        value={hqId}
+        onChange={e => onHqIdChange(e.target.value || "911")}
+        className="h-auto border-0 rounded-none text-sm py-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+      />
+    </div>
+  );
+}
+
 function RequirementsForm({
-  values, onChange, hqId, onHqIdChange
+  values, onChange
 }: {
   values: { nTeams: string; nDays: string; maxPD: string; plannerName: string; planName: string };
   onChange: (k: string, v: string) => void;
-  hqId: string;
-  onHqIdChange: (v: string) => void;
 }) {
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { key: "nTeams", label: "Number of Teams", placeholder: "e.g. 3" },
-          { key: "nDays", label: "Working Days", placeholder: "e.g. 5" },
-          { key: "maxPD", label: "Max Sites/Day/Team", placeholder: "e.g. 8" },
-          { key: "plannerName", label: "Default Planner Name", placeholder: "e.g. Ahmed" },
-        ].map(({ key, label, placeholder }) => (
-          <div key={key} className="space-y-1">
-            <Label className="text-xs">{label}</Label>
-            <Input
-              type={["nTeams", "nDays", "maxPD"].includes(key) ? "number" : "text"}
-              min={1}
-              placeholder={placeholder}
-              value={(values as any)[key]}
-              onChange={e => onChange(key, e.target.value)}
-              className="h-8 text-sm"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="space-y-1">
-        <Label className="text-xs">Plan Name</Label>
-        <Input
-          type="text"
-          placeholder="e.g. Q2 Field Campaign 2025"
-          value={values.planName}
-          onChange={e => onChange("planName", e.target.value)}
-          className="h-8 text-sm"
-        />
-      </div>
-      <div className="space-y-1">
-        <Label className="text-xs">🏠 Start Site ID</Label>
-        <Input
-          type="text"
-          placeholder="e.g. 911"
-          value={hqId}
-          onChange={e => onHqIdChange(e.target.value.trim() || "911")}
-          className="h-8 text-sm"
-        />
-      </div>
+    <div className="grid grid-cols-2 gap-3">
+      {[
+        { key: "nTeams", label: "Number of Teams", placeholder: "e.g. 3" },
+        { key: "nDays", label: "Working Days", placeholder: "e.g. 5" },
+        { key: "maxPD", label: "Max Sites/Day/Team", placeholder: "e.g. 8" },
+        { key: "plannerName", label: "Default Planner Name", placeholder: "e.g. Ahmed" },
+      ].map(({ key, label, placeholder }) => (
+        <div key={key} className="space-y-1">
+          <Label className="text-xs">{label}</Label>
+          <Input
+            type={["nTeams", "nDays", "maxPD"].includes(key) ? "number" : "text"}
+            min={1}
+            placeholder={placeholder}
+            value={(values as any)[key]}
+            onChange={e => onChange(key, e.target.value)}
+            className="h-8 text-sm"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -270,12 +280,15 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
         </CardContent>
       </Card>
 
+      <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} hqId={hqId} onHqIdChange={onHqIdChange} />
+          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
           <CapInfo n={planRows.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
             className="w-full"
@@ -403,12 +416,15 @@ function NewSitesTab({ canSave, hqId, onHqIdChange }: { canSave: boolean; hqId: 
         </CardContent>
       </Card>
 
+      <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} hqId={hqId} onHqIdChange={onHqIdChange} />
+          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
           <CapInfo n={newSites.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
             className="w-full bg-green-600 hover:bg-green-700 text-white"
