@@ -587,6 +587,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 const COLORS=['#00d4ff','#ff6b35','#a78bfa','#34d399','#f87171','#fbbf24','#ec4899','#14b8a6','#6366f1','#84cc16','#f97316','#06b6d4'];
 const HQ_ID='911';
 const CL_GROUPS=[];
+const STORAGE_KEY_FORM='zroute_form_v1';
 
 // ══ STATE ═══════════════════════════════════════════
 let sites=[],sel=new Set(),plans=[],pid=1,picked=COLORS[0];
@@ -596,6 +597,36 @@ let planUploadRows=[],teamPlans=[],nsTeamPlans=[];
 
 // ══ PERSISTENCE ═════════════════════════════════════
 const STORAGE_KEY_SITES='zroute_sites_v3';
+
+// ══ FORM PERSISTENCE ════════════════════════════════
+function saveFormState(){
+  try{
+    const f={
+      pTeams:document.getElementById('pTeams').value,
+      pDays:document.getElementById('pDays').value,
+      pMaxDay:document.getElementById('pMaxDay').value,
+      pPlannerName:document.getElementById('pPlannerName').value,
+      pPlanName:document.getElementById('pPlanName').value,
+      nsTeams:document.getElementById('nsTeams').value,
+      nsDays:document.getElementById('nsDays').value,
+      nsMaxDay:document.getElementById('nsMaxDay').value,
+      nsPlannerName:document.getElementById('nsPlannerName').value,
+      nsPlanName:document.getElementById('nsPlanName').value,
+    };
+    localStorage.setItem(STORAGE_KEY_FORM,JSON.stringify(f));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY_FORM);if(!raw)return;
+    const f=JSON.parse(raw);
+    const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined)el.value=v;};
+    set('pTeams',f.pTeams);set('pDays',f.pDays);set('pMaxDay',f.pMaxDay);
+    set('pPlannerName',f.pPlannerName);set('pPlanName',f.pPlanName);
+    set('nsTeams',f.nsTeams);set('nsDays',f.nsDays);set('nsMaxDay',f.nsMaxDay);
+    set('nsPlannerName',f.nsPlannerName);set('nsPlanName',f.nsPlanName);
+  }catch(e){}
+}
 
 function saveSiteSnapshot(){
   try{
@@ -746,6 +777,10 @@ window.addEventListener('DOMContentLoaded',()=>{
   pb.addEventListener('drop',e=>{e.preventDefault();pb.classList.remove('over');const f=e.dataTransfer.files[0];if(f)onPlanFile({target:{files:[f]}});});
   ['pTeams','pDays','pMaxDay'].forEach(id=>document.getElementById(id).addEventListener('input',updateCapInfo));
   ['nsTeams','nsDays','nsMaxDay'].forEach(id=>document.getElementById(id).addEventListener('input',updateNsCapInfo));
+  ['pTeams','pDays','pMaxDay','pPlannerName','pPlanName','nsTeams','nsDays','nsMaxDay','nsPlannerName','nsPlanName'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.addEventListener('change',saveFormState);
+  });
+  loadFormState();
 });
 
 // ══ TABS ════════════════════════════════════════════
@@ -871,9 +906,10 @@ function generateTeamPlans(){
   if(!sites.length){toast('Upload sites file first','er');return;}
   const nTeams=Math.max(1,parseInt(document.getElementById('pTeams').value)||1);
   const nDays=Math.max(1,parseInt(document.getElementById('pDays').value)||999);
-  const maxPD=Math.max(1,parseInt(document.getElementById('pMaxDay').value)||999);
+  const _rawMaxPD=parseInt(document.getElementById('pMaxDay').value);
   const defaultPlanner=document.getElementById('pPlannerName').value.trim()||'Planner';
   const planName=document.getElementById('pPlanName').value.trim()||'';
+  saveFormState();
   const matched=planUploadRows.map(pr=>{const s=sites.find(x=>x.id===pr.siteId);return s?{...s,plannerName:pr.plannerName||defaultPlanner}:null;}).filter(Boolean);
   if(!matched.length){toast('No plan sites matched loaded sites. Check Site_IDs.','er');return;}
   const hqSite=sites.find(s=>s.id===HQ_ID)||null;
@@ -881,6 +917,7 @@ function generateTeamPlans(){
   setTimeout(()=>{
     try{
       const pool=matched.filter(s=>s.id!==HQ_ID);
+      const maxPD=_rawMaxPD>0?_rawMaxPD:Math.max(1,Math.ceil(pool.length/(nTeams*nDays)));
       const capped=pool.slice(0,nTeams*nDays*maxPD);
       const clusters=kMeansCluster(capped,Math.min(nTeams,capped.length));
       teamPlans=clusters.map((cluster,ti)=>{
@@ -1062,18 +1099,35 @@ function toggleApCollapse(ti){const body=document.getElementById('apbody-'+ti);c
 function toggleApDayCollapse(ti,di){const body=document.getElementById('apdbody-'+ti+'-'+di);const btn=document.getElementById('apdcbtn-'+ti+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
 
 // ══ DAY-LEVEL ROUTE FUNCTIONS ════════════════════════
-function calcDayRoute(ti,di){
+async function calcDayRoute(ti,di){
   const tp=teamPlans[ti];if(!tp)return;const dg=tp.dayGroups[di];if(!dg||!dg.sites.length){toast('No sites in this day','er');return;}
   const ordered=[...(tp.hqSite?[tp.hqSite]:[]),...dg.sites,...(tp.hqSite?[tp.hqSite]:[])];
-  const url=buildGoogleMapsUrl(ordered);window.open(url,'_blank');
-  toast(`Opening ${tp.teamName} Day ${dg.day} in Google Maps…`,'ok');
+  showLdr(`Loading Day ${dg.day} route on map…`);
+  rLayers=rLayers.filter(l=>{if(l._tpid===tp.id&&l._dayIdx===di){map.removeLayer(l);return false;}return true;});
+  try{
+    const r=await fetchRoute(ordered);hideLdr();
+    const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{color:tp.color,weight:5,opacity:.9}).addTo(map);
+    poly._tpid=tp.id;poly._dayIdx=di;rLayers.push(poly);
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    currentGMUrl=buildGoogleMapsUrl(ordered);
+    const tpDay={...tp,teamName:`${tp.teamName} — Day ${dg.day}`};
+    showRoutePanelTeam(tpDay,ordered,r);
+    toast(`🗺 Day ${dg.day}: ${r.distance.toFixed(1)} km · ~${Math.round(r.duration)} min — ${ordered.length} stops`,'ok');
+  }catch(err){
+    hideLdr();
+    const poly=L.polyline(ordered.map(s=>[s.lat,s.lng]),{color:tp.color,weight:4,opacity:.75,dashArray:'8 5'}).addTo(map);
+    poly._tpid=tp.id;poly._dayIdx=di;rLayers.push(poly);
+    map.fitBounds(poly.getBounds(),{padding:[28,28]});
+    currentGMUrl=buildGoogleMapsUrl(ordered);
+    const tpDay2={...tp,teamName:`${tp.teamName} — Day ${dg.day}`};
+    showRoutePanelTeam(tpDay2,ordered,{distance:totD(ordered),duration:totD(ordered)*1.5});
+    toast(`Day ${dg.day} on map — ${ordered.length} stops (straight-line)`,'in');
+  }
 }
 
 function buildGoogleMapsUrl(ordered){
   const pts=ordered.filter((s,i,arr)=>i===0||!(s.lat===arr[i-1].lat&&s.lng===arr[i-1].lng));
-  const MAX_STOPS=10;let used=pts;
-  if(pts.length>MAX_STOPS){const step=Math.ceil((pts.length-2)/(MAX_STOPS-2));used=[pts[0]];for(let i=step;i<pts.length-1;i+=step)used.push(pts[i]);used.push(pts[pts.length-1]);}
-  return`https://www.google.com/maps/dir/${used.map(s=>`${s.lat},${s.lng}`).join('/')}/`;
+  return`https://www.google.com/maps/dir/${pts.map(s=>`${s.lat},${s.lng}`).join('/')}/`;
 }
 
 function openCurrentGMRoute(){if(!currentGMUrl){toast('Calculate a route first','in');return;}window.open(currentGMUrl,'_blank');}
@@ -1349,9 +1403,10 @@ function generateNewSitesPlan(){
   if(!newSitesRows.length){toast('Upload a new sites file first','er');return;}
   const nTeams=Math.max(1,parseInt(document.getElementById('nsTeams').value)||1);
   const nDays=Math.max(1,parseInt(document.getElementById('nsDays').value)||999);
-  const maxPD=Math.max(1,parseInt(document.getElementById('nsMaxDay').value)||999);
+  const _rawNsMaxPD=parseInt(document.getElementById('nsMaxDay').value);
   const defaultPlanner=document.getElementById('nsPlannerName').value.trim()||'Planner';
   const planName=document.getElementById('nsPlanName').value.trim()||'New Sites Plan';
+  saveFormState();
   newSitesRows.forEach(ns=>{if(!sites.find(s=>s.id===ns.id))sites.push(ns);});
   saveSiteSnapshot();addMarkers();renderSites();
   document.getElementById('selbar').style.display='flex';document.getElementById('srchwrap').style.display='block';
@@ -1360,7 +1415,9 @@ function generateNewSitesPlan(){
   showLdr('Clustering &amp; distributing new sites…');
   setTimeout(()=>{
     try{
-      const pool=newSitesRows.filter(s=>s.id!==HQ_ID);const capped=pool.slice(0,nTeams*nDays*maxPD);
+      const pool=newSitesRows.filter(s=>s.id!==HQ_ID);
+      const maxPD=_rawNsMaxPD>0?_rawNsMaxPD:Math.max(1,Math.ceil(pool.length/(nTeams*nDays)));
+      const capped=pool.slice(0,nTeams*nDays*maxPD);
       const clusters=kMeansCluster(capped,Math.min(nTeams,capped.length));
       const baseId=teamPlans.length?Math.max(...teamPlans.map(t=>t.id))+1:1;
       nsTeamPlans=clusters.map((cluster,ti)=>{
