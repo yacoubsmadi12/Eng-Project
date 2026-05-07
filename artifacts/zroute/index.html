@@ -480,6 +480,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
       <span class="plan-name-label">📝 Plan Name</span>
       <input class="plan-name-input" id="pPlanName" type="text" placeholder="e.g. Q2 Field Campaign 2025…">
     </div>
+    <!-- Start Site -->
+    <div class="plan-name-bar" style="margin-top:6px;">
+      <span class="plan-name-label">🏠 Start Site ID</span>
+      <input class="plan-name-input" id="pHqId" type="text" placeholder="e.g. 911" value="911" oninput="HQ_ID=this.value.trim()||'911';const o=document.getElementById('nsHqId');if(o)o.value=HQ_ID;">
+    </div>
     <div class="plan-section">
       <div class="plan-sec-title">⚙️ Team Requirements</div>
       <div class="plan-grid">
@@ -508,6 +513,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     <div class="plan-name-bar">
       <span class="plan-name-label">📝 Plan Name</span>
       <input class="plan-name-input" id="nsPlanName" type="text" placeholder="e.g. New Sites Campaign 2025…">
+    </div>
+    <!-- Start Site -->
+    <div class="plan-name-bar" style="margin-top:6px;">
+      <span class="plan-name-label">🏠 Start Site ID</span>
+      <input class="plan-name-input" id="nsHqId" type="text" placeholder="e.g. 911" value="911" oninput="HQ_ID=this.value.trim()||'911';const o=document.getElementById('pHqId');if(o)o.value=HQ_ID;">
     </div>
     <div class="plan-section">
       <div class="plan-sec-title">⚙️ Team Requirements</div>
@@ -585,7 +595,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 <script>
 // ══ CONSTANTS ═══════════════════════════════════════
 const COLORS=['#00d4ff','#ff6b35','#a78bfa','#34d399','#f87171','#fbbf24','#ec4899','#14b8a6','#6366f1','#84cc16','#f97316','#06b6d4'];
-const HQ_ID='911';
+let HQ_ID='911';
 const CL_GROUPS=[];
 const STORAGE_KEY_FORM='zroute_form_v1';
 
