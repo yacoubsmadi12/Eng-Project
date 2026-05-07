@@ -130,24 +130,30 @@ function RequirementsForm({
   );
 }
 
-function GeneratedPlanList({ plans, onSave, saving, canSave }: {
+function GeneratedPlanList({ plans, onSave, onClear, saving, canSave }: {
   plans: any[];
   onSave: () => void;
+  onClear: () => void;
   saving: boolean;
   canSave: boolean;
 }) {
   if (!plans.length) return null;
   return (
     <div className="space-y-3 mt-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">{plans.length} plan{plans.length !== 1 ? "s" : ""} generated</p>
-        {canSave ? (
-          <Button size="sm" onClick={onSave} disabled={saving}>
-            {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-medium">{plans.length} plan{plans.length !== 1 ? "s" : ""} ready to save</p>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" onClick={onClear} disabled={saving} className="text-xs text-muted-foreground">
+            Clear All
           </Button>
-        ) : (
-          <span className="text-xs text-muted-foreground italic">View only — Admin can save to DB</span>
-        )}
+          {canSave ? (
+            <Button size="sm" onClick={onSave} disabled={saving}>
+              {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
+            </Button>
+          ) : (
+            <span className="text-xs text-muted-foreground italic">View only — Admin can save to DB</span>
+          )}
+        </div>
       </div>
       <div className="space-y-2">
         {plans.map((p, i) => (
@@ -229,8 +235,8 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       const maxPD = Math.max(1, parseInt(form.maxPD) || 999);
 
       const plans = generatePlans(pool, hqSite, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName, false);
-      setGenerated(plans);
-      toast({ title: `Generated ${plans.length} team plans` });
+      setGenerated(prev => [...prev, ...plans]);
+      toast({ title: `Generated ${plans.length} team plans — ${plans.length} added to queue` });
     } finally {
       setGenerating(false);
     }
@@ -251,6 +257,8 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       setSaving(false);
     }
   };
+
+  const handleClear = () => setGenerated([]);
 
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
@@ -306,7 +314,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
+      <GeneratedPlanList plans={generated} onSave={handleSave} onClear={handleClear} saving={saving} canSave={canSave} />
     </div>
   );
 }
@@ -365,8 +373,8 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       const nDays = Math.max(1, parseInt(form.nDays) || 999);
       const maxPD = Math.max(1, parseInt(form.maxPD) || 999);
       const plans = generatePlans(newSites, null, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName || "New Sites Plan", true);
-      setGenerated(plans);
-      toast({ title: `Generated ${plans.length} team plans for ${newSites.length} new sites` });
+      setGenerated(prev => [...prev, ...plans]);
+      toast({ title: `Generated ${plans.length} team plans — ${plans.length} added to queue` });
     } finally {
       setGenerating(false);
     }
@@ -387,6 +395,8 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       setSaving(false);
     }
   };
+
+  const handleClear = () => setGenerated([]);
 
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
@@ -442,7 +452,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
+      <GeneratedPlanList plans={generated} onSave={handleSave} onClear={handleClear} saving={saving} canSave={canSave} />
     </div>
   );
 }
