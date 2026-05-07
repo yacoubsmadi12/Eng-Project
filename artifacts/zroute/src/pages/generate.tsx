@@ -77,7 +77,7 @@ function PlanNameBar({ planName, onChange }: { planName: string; onChange: (v: s
   );
 }
 
-function HqIdBar({ hqId, onHqIdChange, found }: { hqId: string; onHqIdChange: (v: string) => void; found?: boolean | null }) {
+function HqIdBar({ hqId, onHqIdChange, siteName }: { hqId: string; onHqIdChange: (v: string) => void; siteName?: string | null }) {
   return (
     <div className="flex items-center gap-0 border rounded-md overflow-hidden bg-card">
       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2 whitespace-nowrap border-r">
@@ -88,13 +88,13 @@ function HqIdBar({ hqId, onHqIdChange, found }: { hqId: string; onHqIdChange: (v
         placeholder="e.g. 911"
         value={hqId}
         onChange={e => onHqIdChange(e.target.value || "911")}
-        className="h-auto border-0 rounded-none text-sm py-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="h-auto border-0 rounded-none text-sm py-2 focus-visible:ring-0 focus-visible:ring-offset-0 w-24 flex-shrink-0"
       />
-      {found != null && (
-        <span
-          title={found ? "Site found in database" : "Site not found in database"}
-          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mx-3 ${found ? "bg-green-500" : "bg-red-500"}`}
-        />
+      {siteName !== undefined && (
+        <span className={`flex items-center gap-2 px-3 text-xs font-mono truncate flex-1 ${siteName ? "text-green-500" : "text-red-400"}`}>
+          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${siteName ? "bg-green-500" : "bg-red-500"}`} />
+          {siteName ? siteName : "Site not found"}
+        </span>
       )}
     </div>
   );
@@ -287,7 +287,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       </Card>
 
       <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
-      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} found={dbSites.length > 0 ? dbSites.some((s: any) => s.id === hqId) : null} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} siteName={dbSites.length > 0 ? (dbSites.find((s: any) => s.id === hqId)?.name ?? null) : undefined} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -423,7 +423,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       </Card>
 
       <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
-      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} found={dbSites.length > 0 ? dbSites.some((s: any) => s.id === hqId) : null} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} siteName={dbSites.length > 0 ? (dbSites.find((s: any) => s.id === hqId)?.name ?? null) : undefined} />
 
       <Card>
         <CardHeader className="pb-3">
