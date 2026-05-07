@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/auth";
 import { api } from "@/lib/api";
-import { generatePlans, HQ_ID, type SitePoint } from "@/lib/planning";
+import { generatePlans, type SitePoint } from "@/lib/planning";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,7 +143,7 @@ function GeneratedPlanList({ plans, onSave, saving, canSave }: {
   );
 }
 
-function PlanFileTab({ dbSites, canSave }: { dbSites: any[]; canSave: boolean }) {
+function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[]; canSave: boolean; hqId: string; onHqIdChange: (v: string) => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -194,8 +194,8 @@ function PlanFileTab({ dbSites, canSave }: { dbSites: any[]; canSave: boolean })
         return;
       }
 
-      const hqSite = dbSites.find((s: any) => s.id === HQ_ID) ?? null;
-      const pool = matched.filter(s => s.id !== HQ_ID);
+      const hqSite = dbSites.find((s: any) => s.id === hqId) ?? null;
+      const pool = matched.filter(s => s.id !== hqId);
       const nTeams = Math.max(1, parseInt(form.nTeams) || 1);
       const nDays = Math.max(1, parseInt(form.nDays) || 999);
       const maxPD = Math.max(1, parseInt(form.maxPD) || 999);
@@ -263,6 +263,16 @@ function PlanFileTab({ dbSites, canSave }: { dbSites: any[]; canSave: boolean })
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-xs">🏠 Start Site ID</Label>
+            <Input
+              type="text"
+              placeholder="e.g. 911"
+              value={hqId}
+              onChange={e => onHqIdChange(e.target.value.trim() || "911")}
+              className="h-8 text-sm"
+            />
+          </div>
           <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
           <CapInfo n={planRows.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
@@ -280,7 +290,7 @@ function PlanFileTab({ dbSites, canSave }: { dbSites: any[]; canSave: boolean })
   );
 }
 
-function NewSitesTab({ canSave }: { canSave: boolean }) {
+function NewSitesTab({ canSave, hqId, onHqIdChange }: { canSave: boolean; hqId: string; onHqIdChange: (v: string) => void }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -396,6 +406,16 @@ function NewSitesTab({ canSave }: { canSave: boolean }) {
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-xs">🏠 Start Site ID</Label>
+            <Input
+              type="text"
+              placeholder="e.g. 911"
+              value={hqId}
+              onChange={e => onHqIdChange(e.target.value.trim() || "911")}
+              className="h-8 text-sm"
+            />
+          </div>
           <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
           <CapInfo n={newSites.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
@@ -415,6 +435,7 @@ function NewSitesTab({ canSave }: { canSave: boolean }) {
 
 export default function GeneratePage() {
   const { user, logout } = useAuth();
+  const [hqId, setHqId] = useState("911");
 
   const { data: dbSites = [], isLoading: sitesLoading } = useQuery({
     queryKey: ["sites"],
@@ -465,10 +486,10 @@ export default function GeneratePage() {
             <TabsTrigger value="newsites">New Sites</TabsTrigger>
           </TabsList>
           <TabsContent value="planfile">
-            <PlanFileTab dbSites={dbSites as any[]} canSave={canSavePlans} />
+            <PlanFileTab dbSites={dbSites as any[]} canSave={canSavePlans} hqId={hqId} onHqIdChange={setHqId} />
           </TabsContent>
           <TabsContent value="newsites">
-            <NewSitesTab canSave={canSavePlans} />
+            <NewSitesTab canSave={canSavePlans} hqId={hqId} onHqIdChange={setHqId} />
           </TabsContent>
         </Tabs>
       </main>
