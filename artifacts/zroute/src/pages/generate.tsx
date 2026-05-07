@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/auth";
 import { api } from "@/lib/api";
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface PlanRow { siteId: string; plannerName: string; }
@@ -130,50 +131,54 @@ function RequirementsForm({
   );
 }
 
-function GeneratedPlanList({ plans, onSave, onClear, saving, canSave }: {
+function SavePlanDialog({ plans, open, onSave, onCancel, saving, canSave }: {
   plans: any[];
+  open: boolean;
   onSave: () => void;
-  onClear: () => void;
+  onCancel: () => void;
   saving: boolean;
   canSave: boolean;
 }) {
-  if (!plans.length) return null;
   return (
-    <div className="space-y-3 mt-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{plans.length} plan{plans.length !== 1 ? "s" : ""} ready to save</p>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={onClear} disabled={saving} className="text-xs text-muted-foreground">
-            Clear All
+    <Dialog open={open} onOpenChange={v => { if (!v && !saving) onCancel(); }}>
+      <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-base">
+            {plans.length} Plan{plans.length !== 1 ? "s" : ""} Generated
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+          {plans.map((p, i) => (
+            <div key={i} className="border rounded-lg px-4 py-3 bg-muted/30">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                <span className="text-sm font-medium">{p.teamName}</span>
+                {p.isNewSites && <Badge variant="secondary" className="text-xs py-0">New Sites</Badge>}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-0.5 ml-5 text-xs text-muted-foreground">
+                <span>{p.plannerName}</span>
+                <span>{p.siteIds.length} sites</span>
+                <span>{p.dayGroups.length} days</span>
+                {p.km > 0 && <span>~{p.km.toFixed(1)} km</span>}
+                {p.planName && <span className="text-foreground/60">{p.planName}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <DialogFooter className="gap-2 pt-2">
+          <Button variant="outline" onClick={onCancel} disabled={saving}>
+            Cancel
           </Button>
           {canSave ? (
-            <Button size="sm" onClick={onSave} disabled={saving}>
-              {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
+            <Button onClick={onSave} disabled={saving}>
+              {saving ? "Saving..." : `Save to ALL PLANS`}
             </Button>
           ) : (
-            <span className="text-xs text-muted-foreground italic">View only — Admin can save to DB</span>
+            <span className="text-xs text-muted-foreground italic self-center">View only — cannot save</span>
           )}
-        </div>
-      </div>
-      <div className="space-y-2">
-        {plans.map((p, i) => (
-          <div key={i} className="border rounded-lg px-4 py-3 bg-card">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-              <span className="text-sm font-medium">{p.teamName}</span>
-              {p.isNewSites && <Badge variant="secondary" className="text-xs py-0">New Sites</Badge>}
-            </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 ml-5 text-xs text-muted-foreground">
-              <span>{p.plannerName}</span>
-              <span>{p.siteIds.length} sites</span>
-              <span>{p.dayGroups.length} days</span>
-              {p.km > 0 && <span>~{p.km.toFixed(1)} km</span>}
-              {p.planName && <span className="text-foreground/60">{p.planName}</span>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -184,7 +189,8 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
   const [planRows, setPlanRows] = useState<PlanRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [form, setForm] = useState({ nTeams: "", nDays: "", maxPD: "", plannerName: "", planName: "" });
-  const [generated, setGenerated] = useState<any[]>([]);
+  const [pending, setPending] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -204,7 +210,6 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
         .filter(r => r.siteId);
       setPlanRows(parsed);
       setFileName(file.name);
-      setGenerated([]);
       toast({ title: `${parsed.length} plan sites loaded` });
     } catch (err: any) {
       toast({ title: "Error reading file", description: err.message, variant: "destructive" });
@@ -235,8 +240,8 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       const maxPD = Math.max(1, parseInt(form.maxPD) || 999);
 
       const plans = generatePlans(pool, hqSite, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName, false);
-      setGenerated(prev => [...prev, ...plans]);
-      toast({ title: `Generated ${plans.length} team plans — ${plans.length} added to queue` });
+      setPending(plans);
+      setDialogOpen(true);
     } finally {
       setGenerating(false);
     }
@@ -245,10 +250,11 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await api.plans.append(generated);
+      const res = await api.plans.append(pending);
       qc.invalidateQueries({ queryKey: ["plans"] });
       toast({ title: "Plans saved", description: (res as any).message });
-      setGenerated([]);
+      setPending([]);
+      setDialogOpen(false);
       setPlanRows([]);
       setFileName("");
     } catch (err: any) {
@@ -258,7 +264,10 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
     }
   };
 
-  const handleClear = () => setGenerated([]);
+  const handleCancel = () => {
+    setPending([]);
+    setDialogOpen(false);
+  };
 
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
@@ -266,6 +275,8 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
 
   return (
     <div className="space-y-4">
+      <SavePlanDialog plans={pending} open={dialogOpen} onSave={handleSave} onCancel={handleCancel} saving={saving} canSave={canSave} />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Step 1 · Upload Plan File</CardTitle>
@@ -313,8 +324,6 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
           </Button>
         </CardContent>
       </Card>
-
-      <GeneratedPlanList plans={generated} onSave={handleSave} onClear={handleClear} saving={saving} canSave={canSave} />
     </div>
   );
 }
@@ -326,7 +335,8 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
   const [newSites, setNewSites] = useState<NewSiteRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [form, setForm] = useState({ nTeams: "", nDays: "", maxPD: "", plannerName: "", planName: "" });
-  const [generated, setGenerated] = useState<any[]>([]);
+  const [pending, setPending] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -357,7 +367,6 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       if (!parsed.length) { toast({ title: "No valid Lat/Long rows found", variant: "destructive" }); return; }
       setNewSites(parsed);
       setFileName(file.name);
-      setGenerated([]);
       toast({ title: `${parsed.length} new sites loaded` });
     } catch (err: any) {
       toast({ title: "Error reading file", description: err.message, variant: "destructive" });
@@ -373,8 +382,8 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       const nDays = Math.max(1, parseInt(form.nDays) || 999);
       const maxPD = Math.max(1, parseInt(form.maxPD) || 999);
       const plans = generatePlans(newSites, null, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName || "New Sites Plan", true);
-      setGenerated(prev => [...prev, ...plans]);
-      toast({ title: `Generated ${plans.length} team plans — ${plans.length} added to queue` });
+      setPending(plans);
+      setDialogOpen(true);
     } finally {
       setGenerating(false);
     }
@@ -383,10 +392,11 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await api.plans.append(generated);
+      const res = await api.plans.append(pending);
       qc.invalidateQueries({ queryKey: ["plans"] });
       toast({ title: "Plans saved", description: (res as any).message });
-      setGenerated([]);
+      setPending([]);
+      setDialogOpen(false);
       setNewSites([]);
       setFileName("");
     } catch (err: any) {
@@ -396,7 +406,10 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
     }
   };
 
-  const handleClear = () => setGenerated([]);
+  const handleCancel = () => {
+    setPending([]);
+    setDialogOpen(false);
+  };
 
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
@@ -404,6 +417,8 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
 
   return (
     <div className="space-y-4">
+      <SavePlanDialog plans={pending} open={dialogOpen} onSave={handleSave} onCancel={handleCancel} saving={saving} canSave={canSave} />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Step 1 · Upload New Sites File</CardTitle>
@@ -451,8 +466,6 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
           </Button>
         </CardContent>
       </Card>
-
-      <GeneratedPlanList plans={generated} onSave={handleSave} onClear={handleClear} saving={saving} canSave={canSave} />
     </div>
   );
 }
