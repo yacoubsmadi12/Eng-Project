@@ -77,7 +77,7 @@ function PlanNameBar({ planName, onChange }: { planName: string; onChange: (v: s
   );
 }
 
-function HqIdBar({ hqId, onHqIdChange }: { hqId: string; onHqIdChange: (v: string) => void }) {
+function HqIdBar({ hqId, onHqIdChange, found }: { hqId: string; onHqIdChange: (v: string) => void; found?: boolean | null }) {
   return (
     <div className="flex items-center gap-0 border rounded-md overflow-hidden bg-card">
       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2 whitespace-nowrap border-r">
@@ -90,6 +90,12 @@ function HqIdBar({ hqId, onHqIdChange }: { hqId: string; onHqIdChange: (v: strin
         onChange={e => onHqIdChange(e.target.value || "911")}
         className="h-auto border-0 rounded-none text-sm py-2 focus-visible:ring-0 focus-visible:ring-offset-0"
       />
+      {found != null && (
+        <span
+          title={found ? "Site found in database" : "Site not found in database"}
+          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mx-3 ${found ? "bg-green-500" : "bg-red-500"}`}
+        />
+      )}
     </div>
   );
 }
@@ -165,7 +171,7 @@ function GeneratedPlanList({ plans, onSave, saving, canSave }: {
   );
 }
 
-function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[]; canSave: boolean; hqId: string; onHqIdChange: (v: string) => void }) {
+function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[]; canSave: boolean; hqId: string; onHqIdChange: (v: string) => void; }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -281,7 +287,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       </Card>
 
       <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
-      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} found={dbSites.length > 0 ? dbSites.some((s: any) => s.id === hqId) : null} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -305,7 +311,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
   );
 }
 
-function NewSitesTab({ canSave, hqId, onHqIdChange }: { canSave: boolean; hqId: string; onHqIdChange: (v: string) => void }) {
+function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolean; hqId: string; onHqIdChange: (v: string) => void; dbSites: any[] }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -417,7 +423,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange }: { canSave: boolean; hqId: 
       </Card>
 
       <PlanNameBar planName={form.planName} onChange={v => setForm(f => ({ ...f, planName: v }))} />
-      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} />
+      <HqIdBar hqId={hqId} onHqIdChange={onHqIdChange} found={dbSites.length > 0 ? dbSites.some((s: any) => s.id === hqId) : null} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -497,7 +503,7 @@ export default function GeneratePage() {
             <PlanFileTab dbSites={dbSites as any[]} canSave={canSavePlans} hqId={hqId} onHqIdChange={setHqId} />
           </TabsContent>
           <TabsContent value="newsites">
-            <NewSitesTab canSave={canSavePlans} hqId={hqId} onHqIdChange={setHqId} />
+            <NewSitesTab canSave={canSavePlans} hqId={hqId} onHqIdChange={setHqId} dbSites={dbSites as any[]} />
           </TabsContent>
         </Tabs>
       </main>
