@@ -131,10 +131,13 @@ function RequirementsForm({
   );
 }
 
-function GeneratedPlanList({ plans, onSave, saving, canSave }: {
+function GeneratedPlanList({ plans, sites, onSave, onSaveSingle, saving, savingId, canSave }: {
   plans: any[];
+  sites: any[];
   onSave: () => void;
+  onSaveSingle: (plan: any) => void;
   saving: boolean;
+  savingId: number | null;
   canSave: boolean;
 }) {
   if (!plans.length) return null;
@@ -144,7 +147,7 @@ function GeneratedPlanList({ plans, onSave, saving, canSave }: {
         <p className="text-sm font-medium">{plans.length} plan{plans.length !== 1 ? "s" : ""} generated</p>
         {canSave ? (
           <Button size="sm" onClick={onSave} disabled={saving}>
-            {saving ? "Saving..." : `Save ${plans.length} Plan${plans.length !== 1 ? "s" : ""} to DB`}
+            {saving ? "Saving..." : `Save All ${plans.length} to DB`}
           </Button>
         ) : (
           <span className="text-xs text-muted-foreground italic">View only — Admin can save to DB</span>
@@ -153,12 +156,47 @@ function GeneratedPlanList({ plans, onSave, saving, canSave }: {
       <div className="space-y-2">
         {plans.map((p, i) => (
           <div key={i} className="border rounded-lg px-4 py-3 bg-card">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-              <span className="text-sm font-medium">{p.teamName}</span>
-              {p.isNewSites && <Badge variant="secondary" className="text-xs py-0">New Sites</Badge>}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                <span className="text-sm font-medium truncate">{p.teamName}</span>
+                {p.isNewSites && <Badge variant="secondary" className="text-xs py-0 flex-shrink-0">New Sites</Badge>}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost" size="sm"
+                  className="text-xs h-7 px-2"
+                  title="Export Team to Excel"
+                  onClick={() => exportSinglePlan(p, sites)}
+                >
+                  <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Export Team
+                </Button>
+                {canSave && (
+                  <Button
+                    variant="ghost" size="sm"
+                    className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                    title="Save this plan to ALL PLANS"
+                    disabled={savingId === i || saving}
+                    onClick={() => onSaveSingle({ ...p, _idx: i })}
+                  >
+                    {savingId === i ? (
+                      <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 ml-5 text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 ml-5 mt-1 text-xs text-muted-foreground">
               <span>{p.plannerName}</span>
               <span>{p.siteIds.length} sites</span>
               <span>{p.dayGroups.length} days</span>
@@ -182,6 +220,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
   const [generated, setGenerated] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -249,6 +288,22 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
     }
   };
 
+  const handleSaveSingle = async (plan: any) => {
+    const idx = plan._idx;
+    setSavingId(idx);
+    try {
+      const { _idx, ...cleanPlan } = plan;
+      const res = await api.plans.append([cleanPlan]);
+      qc.invalidateQueries({ queryKey: ["plans"] });
+      toast({ title: "Plan saved to ALL PLANS", description: (res as any).message });
+      setGenerated(prev => prev.filter((_, i) => i !== idx));
+    } catch (err: any) {
+      toast({ title: "Error saving", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
   const mPD = parseInt(form.maxPD) || 0;
@@ -303,7 +358,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
+      <GeneratedPlanList plans={generated} sites={dbSites} onSave={handleSave} onSaveSingle={handleSaveSingle} saving={saving} savingId={savingId} canSave={canSave} />
     </div>
   );
 }
@@ -318,6 +373,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
   const [generated, setGenerated] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -385,6 +441,22 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
     }
   };
 
+  const handleSaveSingle = async (plan: any) => {
+    const idx = plan._idx;
+    setSavingId(idx);
+    try {
+      const { _idx, ...cleanPlan } = plan;
+      const res = await api.plans.append([cleanPlan]);
+      qc.invalidateQueries({ queryKey: ["plans"] });
+      toast({ title: "Plan saved to ALL PLANS", description: (res as any).message });
+      setGenerated(prev => prev.filter((_, i) => i !== idx));
+    } catch (err: any) {
+      toast({ title: "Error saving", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const nT = parseInt(form.nTeams) || 0;
   const nD = parseInt(form.nDays) || 0;
   const mPD = parseInt(form.maxPD) || 0;
@@ -439,7 +511,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
         </CardContent>
       </Card>
 
-      <GeneratedPlanList plans={generated} onSave={handleSave} saving={saving} canSave={canSave} />
+      <GeneratedPlanList plans={generated} sites={dbSites} onSave={handleSave} onSaveSingle={handleSaveSingle} saving={saving} savingId={savingId} canSave={canSave} />
     </div>
   );
 }
