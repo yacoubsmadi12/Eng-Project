@@ -61,10 +61,12 @@ function CapInfo({ n, nT, nD, mPD }: { n: number; nT: number; nD: number; mPD: n
 }
 
 function RequirementsForm({
-  values, onChange
+  values, onChange, hqId, onHqIdChange
 }: {
   values: { nTeams: string; nDays: string; maxPD: string; plannerName: string; planName: string };
   onChange: (k: string, v: string) => void;
+  hqId: string;
+  onHqIdChange: (v: string) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -95,6 +97,16 @@ function RequirementsForm({
           placeholder="e.g. Q2 Field Campaign 2025"
           value={values.planName}
           onChange={e => onChange("planName", e.target.value)}
+          className="h-8 text-sm"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label className="text-xs">🏠 Start Site ID</Label>
+        <Input
+          type="text"
+          placeholder="e.g. 911"
+          value={hqId}
+          onChange={e => onHqIdChange(e.target.value.trim() || "911")}
           className="h-8 text-sm"
         />
       </div>
@@ -263,17 +275,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-1">
-            <Label className="text-xs">🏠 Start Site ID</Label>
-            <Input
-              type="text"
-              placeholder="e.g. 911"
-              value={hqId}
-              onChange={e => onHqIdChange(e.target.value.trim() || "911")}
-              className="h-8 text-sm"
-            />
-          </div>
-          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
+          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} hqId={hqId} onHqIdChange={onHqIdChange} />
           <CapInfo n={planRows.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
             className="w-full"
@@ -406,17 +408,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange }: { canSave: boolean; hqId: 
           <CardTitle className="text-sm">Step 2 · Team Requirements</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-1">
-            <Label className="text-xs">🏠 Start Site ID</Label>
-            <Input
-              type="text"
-              placeholder="e.g. 911"
-              value={hqId}
-              onChange={e => onHqIdChange(e.target.value.trim() || "911")}
-              className="h-8 text-sm"
-            />
-          </div>
-          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} />
+          <RequirementsForm values={form} onChange={(k, v) => setForm(f => ({ ...f, [k]: v }))} hqId={hqId} onHqIdChange={onHqIdChange} />
           <CapInfo n={newSites.length} nT={nT} nD={nD} mPD={mPD} />
           <Button
             className="w-full bg-green-600 hover:bg-green-700 text-white"
