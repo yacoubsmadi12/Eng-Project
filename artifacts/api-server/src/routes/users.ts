@@ -55,7 +55,8 @@ router.put("/users/:id", requireAdmin, async (req, res) => {
     displayName?: string; plannerName?: string; role?: string; password?: string;
   };
   const allowedRoles = ["user", "viewer", "admin"];
-  const updates: Record<string, any> = {};
+  type UserUpdate = { displayName?: string; plannerName?: string; role?: string; password?: string; };
+  const updates: UserUpdate = {};
   if (displayName) updates.displayName = displayName;
   if (plannerName) updates.plannerName = plannerName;
   if (role && allowedRoles.includes(role)) updates.role = role;
@@ -63,11 +64,12 @@ router.put("/users/:id", requireAdmin, async (req, res) => {
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "No fields to update" }); return;
   }
+  const found = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!found.length) { res.status(404).json({ error: "User not found" }); return; }
   const [updated] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning({
     id: usersTable.id, username: usersTable.username,
     displayName: usersTable.displayName, plannerName: usersTable.plannerName, role: usersTable.role
   });
-  if (!updated) { res.status(404).json({ error: "User not found" }); return; }
   res.json(updated);
 });
 
