@@ -132,23 +132,29 @@ function RequirementsForm({
   );
 }
 
-function SavePlanDialog({ plans, sites, open, onSave, onCancel, onSaveSingle, saving, savingId, canSave }: {
+function SavePlanDialog({ plans, sites, open, onCancel, onSaveSingle, savingId, canSave }: {
   plans: any[];
   sites: any[];
   open: boolean;
-  onSave: () => void;
   onCancel: () => void;
   onSaveSingle: (plan: any) => void;
-  saving: boolean;
   savingId: number | null;
   canSave: boolean;
 }) {
   return (
-    <Dialog open={open} onOpenChange={v => { if (!v && !saving) onCancel(); }}>
+    <Dialog open={open} onOpenChange={v => { if (!v) onCancel(); }}>
       <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-base">
+          <DialogTitle className="text-base flex items-center gap-2">
             {plans.length} Plan{plans.length !== 1 ? "s" : ""} Generated
+            {canSave && (
+              <span className="text-xs text-green-600 font-normal flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Saved to ALL PLANS
+              </span>
+            )}
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -176,8 +182,8 @@ function SavePlanDialog({ plans, sites, open, onSave, onCancel, onSaveSingle, sa
                     <Button
                       variant="ghost" size="sm"
                       className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
-                      title="Save this plan to ALL PLANS"
-                      disabled={savingId === i || saving}
+                      title="Re-save this plan to ALL PLANS"
+                      disabled={savingId === i}
                       onClick={() => onSaveSingle({ ...p, _idx: i })}
                     >
                       {savingId === i ? (
@@ -205,14 +211,10 @@ function SavePlanDialog({ plans, sites, open, onSave, onCancel, onSaveSingle, sa
           ))}
         </div>
         <DialogFooter className="gap-2 pt-2">
-          <Button variant="outline" onClick={onCancel} disabled={saving}>
-            Cancel
+          <Button variant="outline" onClick={onCancel}>
+            Close
           </Button>
-          {canSave ? (
-            <Button onClick={onSave} disabled={saving}>
-              {saving ? "Saving..." : `Save All to ALL PLANS`}
-            </Button>
-          ) : (
+          {!canSave && (
             <span className="text-xs text-muted-foreground italic self-center">View only — cannot save</span>
           )}
         </DialogFooter>
@@ -231,7 +233,6 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
   const [pending, setPending] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,25 +283,17 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       const plans = generatePlans(pool, hqSite, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName, false);
       setPending(plans);
       setDialogOpen(true);
+      if (canSave && plans.length) {
+        try {
+          await api.plans.append(plans);
+          qc.invalidateQueries({ queryKey: ["plans"] });
+          toast({ title: `✅ ${plans.length} plan${plans.length !== 1 ? "s" : ""} saved to ALL PLANS automatically` });
+        } catch {
+          toast({ title: `Generated ${plans.length} team plans`, description: "Auto-save failed — use Save All to save manually", variant: "destructive" });
+        }
+      }
     } finally {
       setGenerating(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await api.plans.append(pending);
-      qc.invalidateQueries({ queryKey: ["plans"] });
-      toast({ title: "Plans saved", description: (res as any).message });
-      setPending([]);
-      setDialogOpen(false);
-      setPlanRows([]);
-      setFileName("");
-    } catch (err: any) {
-      toast({ title: "Error saving", description: err.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -312,7 +305,6 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
       const res = await api.plans.append([cleanPlan]);
       qc.invalidateQueries({ queryKey: ["plans"] });
       toast({ title: "Plan saved to ALL PLANS", description: (res as any).message });
-      setPending(prev => prev.filter((_, i) => i !== idx));
     } catch (err: any) {
       toast({ title: "Error saving", description: err.message, variant: "destructive" });
     } finally {
@@ -331,7 +323,7 @@ function PlanFileTab({ dbSites, canSave, hqId, onHqIdChange }: { dbSites: any[];
 
   return (
     <div className="space-y-4">
-      <SavePlanDialog plans={pending} sites={dbSites} open={dialogOpen} onSave={handleSave} onCancel={handleCancel} onSaveSingle={handleSaveSingle} saving={saving} savingId={savingId} canSave={canSave} />
+      <SavePlanDialog plans={pending} sites={dbSites} open={dialogOpen} onCancel={handleCancel} onSaveSingle={handleSaveSingle} savingId={savingId} canSave={canSave} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -394,7 +386,6 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
   const [pending, setPending] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -441,25 +432,17 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       const plans = generatePlans(newSites, null, nTeams, nDays, maxPD, form.plannerName || "Planner", form.planName || "New Sites Plan", true);
       setPending(plans);
       setDialogOpen(true);
+      if (canSave && plans.length) {
+        try {
+          await api.plans.append(plans);
+          qc.invalidateQueries({ queryKey: ["plans"] });
+          toast({ title: `✅ ${plans.length} plan${plans.length !== 1 ? "s" : ""} saved to ALL PLANS automatically` });
+        } catch {
+          toast({ title: `Generated ${plans.length} team plans`, description: "Auto-save failed — use Save All to save manually", variant: "destructive" });
+        }
+      }
     } finally {
       setGenerating(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await api.plans.append(pending);
-      qc.invalidateQueries({ queryKey: ["plans"] });
-      toast({ title: "Plans saved", description: (res as any).message });
-      setPending([]);
-      setDialogOpen(false);
-      setNewSites([]);
-      setFileName("");
-    } catch (err: any) {
-      toast({ title: "Error saving", description: err.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -471,7 +454,6 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
       const res = await api.plans.append([cleanPlan]);
       qc.invalidateQueries({ queryKey: ["plans"] });
       toast({ title: "Plan saved to ALL PLANS", description: (res as any).message });
-      setPending(prev => prev.filter((_, i) => i !== idx));
     } catch (err: any) {
       toast({ title: "Error saving", description: err.message, variant: "destructive" });
     } finally {
@@ -490,7 +472,7 @@ function NewSitesTab({ canSave, hqId, onHqIdChange, dbSites }: { canSave: boolea
 
   return (
     <div className="space-y-4">
-      <SavePlanDialog plans={pending} sites={dbSites} open={dialogOpen} onSave={handleSave} onCancel={handleCancel} onSaveSingle={handleSaveSingle} saving={saving} savingId={savingId} canSave={canSave} />
+      <SavePlanDialog plans={pending} sites={dbSites} open={dialogOpen} onCancel={handleCancel} onSaveSingle={handleSaveSingle} savingId={savingId} canSave={canSave} />
 
       <Card>
         <CardHeader className="pb-3">
