@@ -930,9 +930,10 @@ function generateTeamPlans(){
       const maxPD=_rawMaxPD>0?_rawMaxPD:Math.max(1,Math.ceil(pool.length/(nTeams*nDays)));
       const capped=pool.slice(0,nTeams*nDays*maxPD);
       const clusters=kMeansCluster(capped,Math.min(nTeams,capped.length));
-      teamPlans=clusters.map((cluster,ti)=>{
-        const color=COLORS[ti%COLORS.length];
-        const teamName=`Team ${ti+1}`;
+      const baseId=teamPlans.length?Math.max(...teamPlans.map(t=>t.id))+1:1;
+      const newPlans=clusters.map((cluster,ti)=>{
+        const color=COLORS[(baseId+ti-1)%COLORS.length];
+        const teamName=`Team ${baseId+ti}`;
         const planners=[...new Set(cluster.map(s=>s.plannerName).filter(Boolean))];
         const plannerName=planners.length?planners.join(' / '):defaultPlanner;
         const dayGroups=[];let remaining=[...cluster];let cursor=hqSite||cluster[0];
@@ -946,13 +947,14 @@ function generateTeamPlans(){
           dayGroups.push({day:d+1,date:'',sites:daySites});
         }
         const ordered=dayGroups.flatMap(dg=>dg.sites);
-        return{id:ti+1,teamName,plannerName,planName,color,siteIds:ordered.map(s=>s.id),dayGroups,route:null,_km:0,hqSite};
+        return{id:baseId+ti,teamName,plannerName,planName,color,siteIds:ordered.map(s=>s.id),dayGroups,route:null,_km:0,hqSite};
       });
-      teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
+      newPlans.forEach(tp=>teamPlans.push(tp));
+      newPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
       hideLdr();addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
       document.getElementById('stbar').style.display='flex';
       saveTeamPlans();
-      toast(`✅ Generated ${teamPlans.length} team plans`,'ok');
+      toast(`✅ Generated ${newPlans.length} team plans · ${teamPlans.length} total in All Plans`,'ok');
     }catch(err){hideLdr();toast('Error: '+err.message,'er');}
   },30);
 }
