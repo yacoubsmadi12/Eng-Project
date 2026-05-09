@@ -43,6 +43,8 @@ export const api = {
     list: () => req<any[]>("GET", "/users"),
     create: (data: { username: string; password: string; displayName: string; plannerName: string; role?: string }) =>
       req<any>("POST", "/users", data),
+    update: (id: number, data: { displayName?: string; plannerName?: string; role?: string; password?: string }) =>
+      req<any>("PUT", `/users/${id}`, data),
     delete: (id: number) => req<{ message: string }>("DELETE", `/users/${id}`),
   },
 };

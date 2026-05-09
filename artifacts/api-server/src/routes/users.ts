@@ -48,6 +48,29 @@ router.post("/users", requireAdmin, async (req, res) => {
   res.status(201).json(created);
 });
 
+router.put("/users/:id", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const { displayName, plannerName, role, password } = req.body as {
+    displayName?: string; plannerName?: string; role?: string; password?: string;
+  };
+  const allowedRoles = ["user", "viewer", "admin"];
+  const updates: Record<string, any> = {};
+  if (displayName) updates.displayName = displayName;
+  if (plannerName) updates.plannerName = plannerName;
+  if (role && allowedRoles.includes(role)) updates.role = role;
+  if (password) updates.password = password;
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "No fields to update" }); return;
+  }
+  const [updated] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning({
+    id: usersTable.id, username: usersTable.username,
+    displayName: usersTable.displayName, plannerName: usersTable.plannerName, role: usersTable.role
+  });
+  if (!updated) { res.status(404).json({ error: "User not found" }); return; }
+  res.json(updated);
+});
+
 router.delete("/users/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }

@@ -17,7 +17,9 @@ function UsersTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [showAdd, setShowAdd] = useState(false);
+  const [editUser, setEditUser] = useState<any | null>(null);
   const [form, setForm] = useState({ username: "", password: "", displayName: "", plannerName: "", role: "user" });
+  const [editForm, setEditForm] = useState({ displayName: "", plannerName: "", role: "user", password: "" });
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
@@ -35,6 +37,24 @@ function UsersTab() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const updateMut = useMutation({
+    mutationFn: () => {
+      const payload: any = {
+        displayName: editForm.displayName,
+        plannerName: editForm.plannerName,
+        role: editForm.role,
+      };
+      if (editForm.password) payload.password = editForm.password;
+      return api.users.update(editUser.id, payload);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users"] });
+      setEditUser(null);
+      toast({ title: "User updated" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.users.delete(id),
     onSuccess: () => {
@@ -43,6 +63,11 @@ function UsersTab() {
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
+
+  const openEdit = (u: any) => {
+    setEditUser(u);
+    setEditForm({ displayName: u.displayName, plannerName: u.plannerName, role: u.role, password: "" });
+  };
 
   return (
     <div className="space-y-4">
@@ -71,14 +96,24 @@ function UsersTab() {
                 </div>
                 <p className="text-xs text-muted-foreground">@{u.username} · {u.plannerName}</p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                onClick={() => deleteMut.mutate(u.id)}
-              >
-                Delete
-              </Button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => openEdit(u)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => deleteMut.mutate(u.id)}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           ))}
           {users.length === 0 && (
@@ -87,6 +122,7 @@ function UsersTab() {
         </div>
       )}
 
+      {/* Add User Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -128,6 +164,62 @@ function UsersTab() {
               disabled={createMut.isPending || !form.username || !form.password || !form.displayName}
             >
               {createMut.isPending ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editUser} onOpenChange={v => !v && setEditUser(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User — @{editUser?.username}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Display Name</Label>
+              <Input
+                value={editForm.displayName}
+                onChange={e => setEditForm(f => ({ ...f, displayName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Planner Name</Label>
+              <Input
+                value={editForm.plannerName}
+                onChange={e => setEditForm(f => ({ ...f, plannerName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>New Password <span className="text-muted-foreground font-normal">(leave blank to keep current)</span></Label>
+              <Input
+                type="password"
+                placeholder="Enter new password..."
+                value={editForm.password}
+                onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Role & Permissions</Label>
+              <Select value={editForm.role} onValueChange={v => setEditForm(f => ({ ...f, role: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin — full access</SelectItem>
+                  <SelectItem value="user">User — sees only their own plans</SelectItem>
+                  <SelectItem value="viewer">Viewer — sees all plans + can export Excel (read-only)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
+            <Button
+              onClick={() => updateMut.mutate()}
+              disabled={updateMut.isPending || !editForm.displayName}
+            >
+              {updateMut.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
