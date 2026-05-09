@@ -294,6 +294,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .urow-plans{font-size:10px;color:var(--mut);font-family:var(--mono);flex-shrink:0;}
 .urow-del{background:none;border:none;color:var(--mut);cursor:pointer;font-size:15px;padding:0 2px;flex-shrink:0;}
 .urow-del:hover{color:var(--red);}
+.urow-edit{background:none;border:1px solid var(--bd);color:var(--acc);cursor:pointer;font-size:11px;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-weight:700;flex-shrink:0;transition:all .15s;}
+.urow-edit:hover{background:rgba(0,212,255,.12);border-color:var(--acc);}
+#editUserOvl{position:fixed;inset:0;background:rgba(6,11,20,.92);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+#editUserOvl.on{display:flex;}
+.edit-modal{background:var(--s1);border:1px solid var(--bd2);border-radius:14px;width:420px;max-width:97vw;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.8);}
+.edit-modal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd);}
+.edit-modal-title{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--acc);flex:1;}
+.edit-modal-close{cursor:pointer;font-size:18px;color:var(--mut);}
+.edit-modal-close:hover{color:var(--red);}
+.edit-hint{font-size:10px;color:var(--mut);font-family:var(--mono);margin-bottom:14px;padding:7px 10px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:6px;}
+.edit-err{font-size:11px;color:var(--red);font-family:var(--mono);display:none;margin-top:6px;padding:7px 10px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:6px;}
 .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
 .astat{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;text-align:center;}
 .astat-n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--acc);}
@@ -360,6 +371,35 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
         <div class="admin-sec-title">📋 Plans by User</div>
         <div id="aPlansByUser" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div id="editUserOvl">
+  <div class="edit-modal">
+    <div class="edit-modal-hdr">
+      <span class="edit-modal-title">✏️ Edit User</span>
+      <span class="edit-modal-close" onclick="closeEditUser()">✕</span>
+    </div>
+    <div class="edit-hint" id="editUserHint">@username</div>
+    <input type="hidden" id="editUserId">
+    <div class="admin-inp-grp" style="margin-bottom:10px">
+      <div class="admin-lbl">Display Name</div>
+      <input class="admin-inp" id="editDisplayName" type="text" placeholder="Display Name">
+    </div>
+    <div class="admin-inp-grp" style="margin-bottom:10px">
+      <div class="admin-lbl">Planner Name (in plans)</div>
+      <input class="admin-inp" id="editPlannerName" type="text" placeholder="Planner Name">
+    </div>
+    <div class="admin-inp-grp" style="margin-bottom:10px">
+      <div class="admin-lbl">New Password <span style="color:var(--mut);font-weight:400">(leave blank to keep current)</span></div>
+      <input class="admin-inp" id="editPassword" type="password" placeholder="Enter new password...">
+    </div>
+    <div class="edit-err" id="editUserErr"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-g" style="flex:1" onclick="closeEditUser()">Cancel</button>
+      <button class="btn btn-acc" style="flex:1" onclick="saveEditUser()">💾 Save Changes</button>
     </div>
   </div>
 </div>
@@ -1659,6 +1699,7 @@ async function renderAdminPanel(){
       <div class="urow-avatar">${u.displayName.charAt(0).toUpperCase()}</div>
       <div class="urow-info"><div class="urow-name">${u.displayName}</div><div class="urow-user">@${u.username} · Planner: ${u.plannerName||u.displayName}</div></div>
       <span class="urow-role user">User</span><span class="urow-plans">${planCount} plan(s)</span>
+      <button class="urow-edit" onclick="openEditUser(${u.id},'${u.username.replace(/'/g,"\\'")}','${(u.displayName||'').replace(/'/g,"\\'")}','${(u.plannerName||'').replace(/'/g,"\\'")}')">Edit</button>
       <button class="urow-del" onclick="deleteUser(${u.id})" title="Delete user">🗑</button>
     </div>`;
   }).join('');
@@ -1691,6 +1732,37 @@ async function deleteUser(dbId){
   if(!confirm('Delete this user?'))return;
   try{await fetch(`/api/users/${dbId}`,{method:'DELETE',credentials:'include'});renderAdminPanel();toast('User deleted','in');}
   catch(e){toast('Delete failed','er');}
+}
+
+function openEditUser(id,username,displayName,plannerName){
+  document.getElementById('editUserId').value=id;
+  document.getElementById('editUserHint').textContent='@'+username;
+  document.getElementById('editDisplayName').value=displayName;
+  document.getElementById('editPlannerName').value=plannerName;
+  document.getElementById('editPassword').value='';
+  document.getElementById('editUserErr').style.display='none';
+  document.getElementById('editUserOvl').classList.add('on');
+}
+
+function closeEditUser(){
+  document.getElementById('editUserOvl').classList.remove('on');
+}
+
+async function saveEditUser(){
+  const id=document.getElementById('editUserId').value;
+  const displayName=document.getElementById('editDisplayName').value.trim();
+  const plannerName=document.getElementById('editPlannerName').value.trim();
+  const password=document.getElementById('editPassword').value;
+  const errEl=document.getElementById('editUserErr');
+  errEl.style.display='none';
+  if(!displayName){errEl.textContent='Display name is required';errEl.style.display='block';return;}
+  const payload={displayName,plannerName:plannerName||displayName};
+  if(password)payload.password=password;
+  try{
+    const res=await fetch(`/api/users/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'include'});
+    if(!res.ok){const data=await res.json();errEl.textContent=data.error||'Error saving';errEl.style.display='block';return;}
+    closeEditUser();renderAdminPanel();toast('User updated ✅','ok');
+  }catch(e){errEl.textContent='Network error';errEl.style.display='block';}
 }
 </script>
 </body>
