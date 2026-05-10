@@ -103,7 +103,7 @@ router.post("/plans/append", requireAuth, (req, res, next) => {
   let nextId = usedIds.size ? Math.max(...usedIds) + 1 : 1;
 
   const rows = plans.map(p => ({
-    clientId: nextId++,
+    clientId: (p.id && !usedIds.has(p.id)) ? p.id : nextId++,
     teamName: p.teamName,
     plannerName: p.plannerName,
     planName: p.planName || "",

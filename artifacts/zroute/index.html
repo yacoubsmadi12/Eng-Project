@@ -698,18 +698,31 @@ function saveSiteSnapshot(){
   }catch(e){console.warn('Site snapshot save failed:',e);}
 }
 
-async function saveTeamPlans(){
+async function saveTeamPlans(plansToSave){
   try{
-    const toSave=teamPlans.map(tp=>({
+    const src=plansToSave||teamPlans;
+    const toSave=src.map(tp=>({
       id:tp.id,teamName:tp.teamName,plannerName:tp.plannerName,planName:tp.planName||'',
       color:tp.color,km:tp._km||0,isNewSites:tp.isNewSites||false,
       hqSiteId:tp.hqSite?tp.hqSite.id:null,siteIds:tp.siteIds,
       dayGroups:tp.dayGroups.map(dg=>({day:dg.day,date:dg.date||'',siteIds:dg.sites.map(s=>s.id)}))
     }));
-    fetch('/api/plans/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave),credentials:'include'})
-      .then(()=>refreshDbPlansFull())
+    await fetch('/api/plans/append',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave),credentials:'include'})
       .catch(e=>console.warn('API plan save failed:',e));
+    await refreshDbPlansFull();
   }catch(e){console.warn('Plan save failed:',e);}
+}
+
+async function updatePlanInDb(tp){
+  if(!tp||!tp.id)return;
+  try{
+    const data={teamName:tp.teamName,plannerName:tp.plannerName,planName:tp.planName||'',
+      color:tp.color,km:tp._km||0,isNewSites:tp.isNewSites||false,
+      hqSiteId:tp.hqSite?tp.hqSite.id:null,siteIds:tp.siteIds,
+      dayGroups:tp.dayGroups.map(dg=>({day:dg.day,date:dg.date||'',siteIds:dg.sites.map(s=>s.id)}))};
+    fetch(`/api/plans/${tp.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'include'})
+      .catch(e=>console.warn('Plan update failed:',e));
+  }catch(e){console.warn('updatePlanInDb failed:',e);}
 }
 
 let dbPlansFull=[];
@@ -1053,7 +1066,7 @@ function generateTeamPlans(){
       newPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
       hideLdr();addMarkers();renderTeamPlanList();updHdr();
       document.getElementById('stbar').style.display='flex';
-      saveTeamPlans();refreshDbPlansFull();
+      saveTeamPlans(newPlans);
       toast(`✅ Generated ${newPlans.length} team plans · saved to All Plans`,'ok');
     }catch(err){hideLdr();toast('Error: '+err.message,'er');}
   },30);
@@ -1093,11 +1106,11 @@ function renderTeamPlanList(){
         <div class="tcard-dot" style="background:${tp.color}"></div>
         <div class="tcard-name" style="color:${tp.color}">
           <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px" value="${tp.teamName}"
-            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+            onchange="teamPlans[${ti}].teamName=this.value;updatePlanInDb(teamPlans[${ti}]);renderAllPlans()" onclick="event.stopPropagation()">
         </div>
         <div class="tcard-meta">
           <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px" value="${tp.plannerName}"
-            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+            onchange="teamPlans[${ti}].plannerName=this.value;updatePlanInDb(teamPlans[${ti}]);renderAllPlans()" onclick="event.stopPropagation()">
         </div>
         <span style="font-size:10px;color:var(--mut);font-family:var(--mono);margin-left:4px">${tp.siteIds.length} sites · ${tp.dayGroups.length}d${tp._km?' · '+tp._km.toFixed(1)+'km':''}</span>
       </div>
@@ -1109,7 +1122,7 @@ function renderTeamPlanList(){
                 <button class="collapse-btn" id="dcbtn-${ti}-${di}" onclick="event.stopPropagation();toggleDayCollapse(${ti},${di})">▼</button>
                 📅 Day ${dg.day}
                 <input type="date" class="day-date-inp" value="${dg.date||''}"
-                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()" onclick="event.stopPropagation()">
+                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;updatePlanInDb(teamPlans[${ti}])" onclick="event.stopPropagation()">
                 <span style="font-size:10px;color:var(--mut)">(${dg.sites.length} sites)</span>
               </div>
               <div class="tday-body" id="dbody-${ti}-${di}">
@@ -1298,7 +1311,7 @@ async function calcTeamRoute(ti){
     const poly=L.polyline(r.geometry.map(c=>[c[1],c[0]]),{color:tp.color,weight:5,opacity:.85}).addTo(map);
     poly._tpid=tp.id;rLayers.push(poly);tp._km=r.distance;updHdr();
     showRoutePanelTeam(tp,optimized,r);map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    saveTeamPlans();renderTeamPlanList();renderAllPlans();
+    updatePlanInDb(tp);renderTeamPlanList();renderAllPlans();
     toast(`${tp.teamName}: ${r.distance.toFixed(1)} km · ~${Math.round(r.duration)} min`,'ok');
   }catch(err){
     hideLdr();toast('Road routing unavailable — fallback','in');
@@ -1307,7 +1320,7 @@ async function calcTeamRoute(ti){
     poly._tpid=tp.id;rLayers.push(poly);tp._km=totD(flat);updHdr();
     showRoutePanelTeam(tp,flat,{distance:tp._km,duration:tp._km*1.5});
     map.fitBounds(poly.getBounds(),{padding:[28,28]});
-    saveTeamPlans();renderTeamPlanList();renderAllPlans();
+    updatePlanInDb(tp);renderTeamPlanList();renderAllPlans();
   }
 }
 
@@ -1548,7 +1561,7 @@ function generateNewSitesPlan(){
       });
       nsTeamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
       hideLdr();addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
-      document.getElementById('stbar').style.display='flex';saveTeamPlans();
+      document.getElementById('stbar').style.display='flex';saveTeamPlans(nsTeamPlans);
       toast(`✅ Generated ${nsTeamPlans.length} new site team plans`,'ok');
     }catch(err){hideLdr();toast('Error: '+err.message,'er');}
   },30);
@@ -1566,11 +1579,11 @@ function renderNsPlanList(){
         <div class="tcard-dot" style="background:${tp.color}"></div>
         <div class="tcard-name" style="color:${tp.color}">
           <input class="editable-field" style="color:${tp.color};font-size:14px;font-weight:700;width:130px" value="${tp.teamName}"
-            onchange="teamPlans[${ti}].teamName=this.value;saveTeamPlans();renderAllPlans();renderNsPlanList()" onclick="event.stopPropagation()">
+            onchange="teamPlans[${ti}].teamName=this.value;updatePlanInDb(teamPlans[${ti}]);renderAllPlans();renderNsPlanList()" onclick="event.stopPropagation()">
         </div>
         <div class="tcard-meta">
           <input class="editable-field" style="color:var(--acc3);font-size:11px;font-family:var(--mono);width:110px" value="${tp.plannerName}"
-            onchange="teamPlans[${ti}].plannerName=this.value;saveTeamPlans();renderAllPlans()" onclick="event.stopPropagation()">
+            onchange="teamPlans[${ti}].plannerName=this.value;updatePlanInDb(teamPlans[${ti}]);renderAllPlans()" onclick="event.stopPropagation()">
         </div>
         <span style="font-size:10px;color:var(--mut);font-family:var(--mono);margin-left:4px">${tp.siteIds.length} sites · ${tp.dayGroups.length}d${tp._km?' · '+tp._km.toFixed(1)+'km':''}</span>
       </div>
@@ -1582,7 +1595,7 @@ function renderNsPlanList(){
                 <button class="collapse-btn" id="nsdcbtn-${ti}-${di}" onclick="event.stopPropagation();toggleNsDayCollapse(${ti},${di})">▼</button>
                 📅 Day ${dg.day}
                 <input type="date" class="day-date-inp" value="${dg.date||''}"
-                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;saveTeamPlans()" onclick="event.stopPropagation()">
+                  onchange="teamPlans[${ti}].dayGroups[${di}].date=this.value;updatePlanInDb(teamPlans[${ti}])" onclick="event.stopPropagation()">
                 <span style="font-size:10px;color:var(--mut)">(${dg.sites.length} sites)</span>
               </div>
               <div class="tday-body" id="nsdbody-${ti}-${di}">
