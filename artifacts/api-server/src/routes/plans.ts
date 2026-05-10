@@ -28,15 +28,7 @@ router.get("/plans", requireAuth, async (req, res) => {
     siteIds: r.siteIds,
   }));
 
-  if (user.role === "admin" || user.role === "viewer") {
-    res.json(plans);
-  } else {
-    const pname = user.plannerName.toLowerCase().trim();
-    const filtered = plans.filter((p: any) =>
-      p.plannerName.toLowerCase().split(/[/,]+/).map((s: string) => s.trim()).some((n: string) => n === pname)
-    );
-    res.json(filtered);
-  }
+  res.json(plans);
 });
 
 router.post("/plans/bulk", requireAuth, async (req, res) => {

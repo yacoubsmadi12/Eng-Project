@@ -601,7 +601,7 @@ export default function DashboardPage() {
 
   const isAdmin = user?.role === "admin";
   const isViewer = user?.role === "viewer";
-  const canExport = isAdmin || isViewer;
+  const canExport = !!user;
   const canSavePlans = isAdmin || user?.role === "user";
 
   const { data: plans = [], isLoading, error } = useQuery({
@@ -679,7 +679,7 @@ export default function DashboardPage() {
           <TabsContent value="allplans">
             <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
               <div>
-                <h2 className="text-lg font-bold">{isAdmin || isViewer ? "All Plans" : "My Plans"}</h2>
+                <h2 className="text-lg font-bold">All Plans</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">{(plans as any[]).length} plan{(plans as any[]).length !== 1 ? "s" : ""} available</p>
               </div>
               {canExport && (plans as any[]).length > 0 && (

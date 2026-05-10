@@ -707,8 +707,66 @@ async function saveTeamPlans(){
       dayGroups:tp.dayGroups.map(dg=>({day:dg.day,date:dg.date||'',siteIds:dg.sites.map(s=>s.id)}))
     }));
     fetch('/api/plans/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave),credentials:'include'})
+      .then(()=>refreshDbPlansFull())
       .catch(e=>console.warn('API plan save failed:',e));
   }catch(e){console.warn('Plan save failed:',e);}
+}
+
+let dbPlansFull=[];
+async function refreshDbPlansFull(){
+  try{
+    const res=await fetch('/api/plans',{credentials:'include'});
+    if(!res.ok)return;
+    const apiPlans=await res.json();
+    dbPlansFull=apiPlans.map(ap=>{
+      const hqSite=ap.hqSiteId?(sites.find(s=>s.id===ap.hqSiteId)||null):null;
+      return{
+        id:ap.id,teamName:ap.teamName,plannerName:ap.plannerName,planName:ap.planName||'',
+        color:ap.color||'#00d4ff',siteIds:ap.siteIds||[],_km:ap.km||0,
+        isNewSites:ap.isNewSites||false,hqSite,route:null,
+        dayGroups:(ap.dayGroups||[]).map(dg=>({
+          day:dg.day,date:dg.date||'',
+          sites:(dg.siteIds||[]).map(id=>{const s=sites.find(x=>x.id===id);return s||{id,name:id,lat:0,lng:0,gov:''};})
+        }))
+      };
+    });
+  }catch(e){console.warn('refreshDbPlansFull failed:',e);}
+}
+async function deleteDbPlan(planId){
+  if(!confirm('Delete this plan from history permanently?'))return;
+  try{
+    await fetch(`/api/plans/${planId}`,{method:'DELETE',credentials:'include'});
+    await refreshDbPlansFull();renderAllPlans();
+    toast('Plan deleted from history','in');
+  }catch(e){toast('Delete failed','er');}
+}
+function exportPlanObj(tp){
+  if(!tp){toast('Plan not found','er');return;}
+  const wb=XLSX.utils.book_new();
+  const sumData=[['Z Route — Team Plan Export','',''],['Plan Name',tp.planName||'—',''],['Team Name',tp.teamName,''],['Planner',tp.plannerName,''],['Total Sites',(tp.siteIds||[]).length,''],['Working Days',(tp.dayGroups||[]).length,''],['Total Distance (km)',tp._km?tp._km.toFixed(1):'Not calculated yet',''],['HQ Site ID',HQ_ID,''],['Generated',new Date().toLocaleString(),'']];
+  const sumWS=XLSX.utils.aoa_to_sheet(sumData);sumWS['!cols']=[{wch:22},{wch:28},{wch:16}];XLSX.utils.book_append_sheet(wb,sumWS,'Summary');
+  const hdr=['Team','Planner','Day','Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Sub District','Vendor','Category','Power Class','Owner','Contact Person','Contact Number'];
+  const rows=[hdr];
+  (tp.dayGroups||[]).forEach(dg=>{
+    const hq=tp.hqSite;
+    if(hq)rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,'START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
+    (dg.sites||[]).forEach((s,si)=>rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.subdist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.owner||'',s.contact||'',s.contactn||'']));
+    if(hq)rows.push([tp.teamName,tp.plannerName,`Day ${dg.day}`,'END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.subdist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.owner||'',hq.contact||'',hq.contactn||'']);
+    rows.push(Array(hdr.length).fill(''));
+  });
+  const planWS=XLSX.utils.aoa_to_sheet(rows);planWS['!cols']=[{wch:10},{wch:16},{wch:8},{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,planWS,'Route Plan');
+  (tp.dayGroups||[]).forEach(dg=>{
+    const dHdr=['Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Vendor','Category','Power Class','Contact Person','Contact Number'];
+    const dRows=[dHdr];const hq=tp.hqSite;
+    if(hq)dRows.push(['START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.contact||'',hq.contactn||'']);
+    (dg.sites||[]).forEach((s,si)=>dRows.push([si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.vendor||'',s.cat||'',s.pwrclass||'',s.contact||'',s.contactn||'']));
+    if(hq)dRows.push(['END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.pwrclass||'',hq.contact||'',hq.contactn||'']);
+    const dWS=XLSX.utils.aoa_to_sheet(dRows);dWS['!cols']=[{wch:7},{wch:10},{wch:28},{wch:14},{wch:12},{wch:11},{wch:11},{wch:14},{wch:14},{wch:12},{wch:12},{wch:18},{wch:16}];
+    XLSX.utils.book_append_sheet(wb,dWS,`Day ${dg.day}${dg.date?' '+dg.date:''}`.substring(0,31));
+  });
+  XLSX.writeFile(wb,`ZRoute_${tp.teamName.replace(/\s+/g,'_')}.xlsx`);
+  toast(`Exported ${tp.teamName}`,'ok');
 }
 
 function plansFromApi(apiPlans,siteSource){
@@ -737,6 +795,7 @@ async function loadTeamPlans(){
           teamPlans=loaded;
           teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
           nsTeamPlans=teamPlans.filter(tp=>tp.isNewSites);
+          dbPlansFull=[...teamPlans];
           addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
           document.getElementById('stbar').style.display='flex';
           toast(`✅ Restored ${teamPlans.length} saved plan(s)`,'ok');
@@ -763,6 +822,7 @@ async function tryLoadPlansOnStartup(){
     teamPlans=loaded;
     teamPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
     nsTeamPlans=teamPlans.filter(tp=>tp.isNewSites);
+    dbPlansFull=[...teamPlans];
     addMarkers();fitAll();renderSites();
     document.getElementById('selbar').style.display='flex';
     document.getElementById('srchwrap').style.display='block';
@@ -781,7 +841,7 @@ async function tryLoadPlansOnStartup(){
 
 async function clearSavedPlans(){
   try{await fetch('/api/plans',{method:'DELETE',credentials:'include'});}catch(e){}
-  teamPlans=[];nsTeamPlans=[];
+  teamPlans=[];nsTeamPlans=[];dbPlansFull=[];
   sites.forEach(s=>s.planId=null);
   rLayers.forEach(l=>map.removeLayer(l));rLayers=[];
   addMarkers();renderTeamPlanList();renderAllPlans();renderNsPlanList();updHdr();
@@ -839,7 +899,7 @@ function gTab(id,btn){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('pane-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='allplans')renderAllPlans();
+  if(id==='allplans'){refreshDbPlansFull().then(()=>renderAllPlans());}
 }
 
 // ══ SITES FILE UPLOAD ═══════════════════════════════
@@ -991,10 +1051,10 @@ function generateTeamPlans(){
       });
       newPlans.forEach(tp=>teamPlans.push(tp));
       newPlans.forEach(tp=>tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=tp.id;}));
-      hideLdr();addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
+      hideLdr();addMarkers();renderTeamPlanList();updHdr();
       document.getElementById('stbar').style.display='flex';
-      saveTeamPlans();
-      toast(`✅ Generated ${newPlans.length} team plans · ${teamPlans.length} total in All Plans`,'ok');
+      saveTeamPlans();refreshDbPlansFull();
+      toast(`✅ Generated ${newPlans.length} team plans · saved to All Plans`,'ok');
     }catch(err){hideLdr();toast('Error: '+err.message,'er');}
   },30);
 }
@@ -1084,49 +1144,48 @@ function renderTeamPlanList(){
   }).join('');
 }
 
-// ══ RENDER ALL PLANS (Tab 3) ════════════════════════
+// ══ RENDER ALL PLANS (Tab 3) — reads from DB history ════
 function renderAllPlans(filter=''){
   const list=document.getElementById('apList');
-  if(!teamPlans.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No plans generated yet</div>';return;}
+  if(!dbPlansFull.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut);font-size:12px;opacity:.6">No saved plans yet — generate plans in the Planning tab</div>';return;}
   const q=filter.toLowerCase().trim();
-  const _vp=visiblePlans();
-  const visible=_vp.map(tp=>({tp,ti:teamPlans.indexOf(tp)})).filter(({tp})=>{
+  const visible=dbPlansFull.map((tp,dbi)=>({tp,dbi})).filter(({tp})=>{
     if(!q)return true;
     return(tp.planName||'').toLowerCase().includes(q)||tp.teamName.toLowerCase().includes(q)||tp.plannerName.toLowerCase().includes(q);
   });
   const info=document.getElementById('apSrchInfo');
-  if(q){info.style.display='block';info.textContent=`${visible.length} of ${teamPlans.length} plans match "${filter}"`;}
+  if(q){info.style.display='block';info.textContent=`${visible.length} of ${dbPlansFull.length} plans match "${filter}"`;}
   else info.style.display='none';
   if(!visible.length){list.innerHTML='<div style="padding:18px;text-align:center;color:var(--mut);font-size:12px">No plans match your search</div>';return;}
   const groups=[];const seen=new Map();
-  visible.forEach(({tp,ti})=>{const key=tp.planName||'__noname__';if(!seen.has(key)){seen.set(key,groups.length);groups.push({planName:tp.planName||'',items:[]});}groups[seen.get(key)].items.push({tp,ti});});
+  visible.forEach(({tp,dbi})=>{const key=tp.planName||'__noname__';if(!seen.has(key)){seen.set(key,groups.length);groups.push({planName:tp.planName||'',items:[]});}groups[seen.get(key)].items.push({tp,dbi});});
   list.innerHTML=groups.map(g=>`
     ${g.planName?`<div style="margin:10px 6px 4px;display:flex;align-items:center;gap:8px;">
       <div style="flex:1;height:1px;background:var(--bd);"></div>
       <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--acc3);letter-spacing:.5px;white-space:nowrap;">📝 ${g.planName}</span>
       <div style="flex:1;height:1px;background:var(--bd);"></div></div>`:''}
-    ${g.items.map(({tp,ti})=>`
-    <div class="ap-card" id="apcard-${ti}">
-      <div class="ap-card-head" onclick="toggleApCollapse(${ti})" style="cursor:pointer;">
-        <button class="collapse-btn" id="apcbtn-${ti}" onclick="event.stopPropagation();toggleApCollapse(${ti})">▼</button>
+    ${g.items.map(({tp,dbi})=>`
+    <div class="ap-card" id="apcard-db${dbi}">
+      <div class="ap-card-head" onclick="toggleDbApCollapse(${dbi})" style="cursor:pointer;">
+        <button class="collapse-btn" id="apcbtn-db${dbi}" onclick="event.stopPropagation();toggleDbApCollapse(${dbi})">▼</button>
         <div class="ap-dot" style="background:${tp.color}"></div>
         <div class="ap-name" style="color:${tp.color}">${tp.teamName}</div>
-        <div class="ap-meta">👤 ${tp.plannerName} · ${tp.siteIds.length} sites · ${tp.dayGroups.length} days${tp._km?' · '+tp._km.toFixed(1)+'km':''}</div>
+        <div class="ap-meta">👤 ${tp.plannerName} · ${(tp.siteIds||[]).length} sites · ${(tp.dayGroups||[]).length} days${tp._km?' · '+tp._km.toFixed(1)+'km':''}</div>
       </div>
-      <div class="tcard-body-wrap" id="apbody-${ti}">
+      <div class="tcard-body-wrap" id="apbody-db${dbi}">
         <div class="ap-body">
-          ${tp.dayGroups.map((dg,di)=>`
+          ${(tp.dayGroups||[]).map((dg,di)=>`
             <div style="margin-bottom:4px;">
-              <div class="ap-day-label" onclick="toggleApDayCollapse(${ti},${di})" style="cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;">
-                <button class="collapse-btn" id="apdcbtn-${ti}-${di}" onclick="event.stopPropagation();toggleApDayCollapse(${ti},${di})" style="font-size:11px;">▼</button>
-                📅 Day ${dg.day}${dg.date?' · '+dg.date:''} <span style="color:var(--mut);font-size:10px;">(${dg.sites.length} sites)</span>
+              <div class="ap-day-label" onclick="toggleDbApDayCollapse(${dbi},${di})" style="cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;">
+                <button class="collapse-btn" id="apdcbtn-db${dbi}-${di}" onclick="event.stopPropagation();toggleDbApDayCollapse(${dbi},${di})" style="font-size:11px;">▼</button>
+                📅 Day ${dg.day}${dg.date?' · '+dg.date:''} <span style="color:var(--mut);font-size:10px;">(${(dg.sites||[]).length} sites)</span>
               </div>
-              <div id="apdbody-${ti}-${di}">
+              <div id="apdbody-db${dbi}-${di}">
                 ${tp.hqSite?`<div class="ap-row"><span class="ap-stop-num">▶</span><span class="ap-stop-name">${tp.hqSite.name}</span><span class="ap-stop-id">ID:${tp.hqSite.id}</span><span class="hq-badge" style="font-size:9px">HQ START</span></div>`:''}
-                ${dg.sites.map((s,si)=>`
-                  <div class="ap-row" onclick="openSiteDetail('${s.id}')" style="cursor:pointer;">
+                ${(dg.sites||[]).map((s,si)=>`
+                  <div class="ap-row">
                     <span class="ap-stop-num">${si+1}</span>
-                    <span class="ap-stop-name">${s.name}</span>
+                    <span class="ap-stop-name">${s.name||s.id}</span>
                     <span class="ap-stop-id">ID:${s.id}</span>
                     <span class="ap-stop-gov">${s.gov||''}</span>
                     ${s.key?`<span class="ap-stop-key">🔑${s.key}</span>`:''}
@@ -1136,9 +1195,8 @@ function renderAllPlans(filter=''){
             </div>`).join('')}
         </div>
         <div class="ap-btns">
-          <button class="btn btn-acc btn-sm" onclick="calcTeamRoute(${ti})">🔀 Optimize Route</button>
-          <button class="btn btn-ylw btn-sm" onclick="exportTeamPlan(${ti})">📥 Export Excel</button>
-          <button class="btn btn-r btn-sm" onclick="if(confirm('Delete ${tp.teamName}?'))deleteTeamPlan(${ti})">🗑️ Delete</button>
+          <button class="btn btn-ylw btn-sm" onclick="exportPlanObj(dbPlansFull[${dbi}])">📥 Export Excel</button>
+          <button class="btn btn-r btn-sm" onclick="if(confirm('Delete ${tp.teamName} from history?'))deleteDbPlan(${tp.id})">🗑️ Delete</button>
         </div>
       </div>
     </div>`).join('')}
@@ -1149,6 +1207,8 @@ function filterAllPlans(){renderAllPlans(document.getElementById('apSrchIn').val
 
 function toggleApCollapse(ti){const body=document.getElementById('apbody-'+ti);const btn=document.getElementById('apcbtn-'+ti);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
 function toggleApDayCollapse(ti,di){const body=document.getElementById('apdbody-'+ti+'-'+di);const btn=document.getElementById('apdcbtn-'+ti+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
+function toggleDbApCollapse(dbi){const body=document.getElementById('apbody-db'+dbi);const btn=document.getElementById('apcbtn-db'+dbi);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
+function toggleDbApDayCollapse(dbi,di){const body=document.getElementById('apdbody-db'+dbi+'-'+di);const btn=document.getElementById('apdcbtn-db'+dbi+'-'+di);if(!body||!btn)return;const c=body.style.display==='none';body.style.display=c?'':'none';btn.classList.toggle('collapsed',!c);}
 
 // ══ DAY-LEVEL ROUTE FUNCTIONS ════════════════════════
 async function calcDayRoute(ti,di){
@@ -1264,7 +1324,7 @@ function deleteTeamPlan(ti){
   const tp=teamPlans[ti];if(!tp)return;
   tp.siteIds.forEach(id=>{const s=sites.find(x=>x.id===id);if(s)s.planId=null;});
   rLayers=rLayers.filter(l=>{if(l._tpid===tp.id){map.removeLayer(l);return false;}return true;});
-  teamPlans.splice(ti,1);saveTeamPlans();addMarkers();renderTeamPlanList();renderAllPlans();updHdr();
+  teamPlans.splice(ti,1);addMarkers();renderTeamPlanList();updHdr();
 }
 
 function showRoutePanelTeam(tp,ordered,result){
@@ -1318,18 +1378,19 @@ function exportTeamPlan(ti){
 }
 
 function exportAllPlans(){
-  if(!teamPlans.length){toast('No plans to export','er');return;}
+  const src=dbPlansFull.length?dbPlansFull:teamPlans;
+  if(!src.length){toast('No plans to export','er');return;}
   const wb=XLSX.utils.book_new();
   const ovHdr=['Team','Planner','Total Sites','Days','Distance (km)'];
-  const ovRows=[ovHdr,...teamPlans.map(tp=>[tp.teamName,tp.plannerName,tp.siteIds.length,tp.dayGroups.length,tp._km?tp._km.toFixed(1):'—'])];
+  const ovRows=[ovHdr,...src.map(tp=>[tp.teamName,tp.plannerName,(tp.siteIds||[]).length,(tp.dayGroups||[]).length,tp._km?tp._km.toFixed(1):'—'])];
   const ovWS=XLSX.utils.aoa_to_sheet(ovRows);XLSX.utils.book_append_sheet(wb,ovWS,'Overview');
-  teamPlans.forEach(tp=>{
+  src.forEach(tp=>{
     const hdr=['Day','Stop #','Site_ID','Site_Name','Governorate','KEY','Lat','Lng','District','Vendor','Category','Contact Person','Contact Number'];
     const rows=[hdr];
-    tp.dayGroups.forEach(dg=>{
+    (tp.dayGroups||[]).forEach(dg=>{
       const hq=tp.hqSite;
       if(hq)rows.push([`Day ${dg.day}`,'START',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.contact||'',hq.contactn||'']);
-      dg.sites.forEach((s,si)=>rows.push([`Day ${dg.day}`,si+1,s.id,s.name,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.vendor||'',s.cat||'',s.contact||'',s.contactn||'']));
+      (dg.sites||[]).forEach((s,si)=>rows.push([`Day ${dg.day}`,si+1,s.id,s.name||s.id,s.gov||'',s.key||'',s.lat,s.lng,s.dist||'',s.vendor||'',s.cat||'',s.contact||'',s.contactn||'']));
       if(hq)rows.push([`Day ${dg.day}`,'END',hq.id,hq.name,hq.gov||'',hq.key||'',hq.lat,hq.lng,hq.dist||'',hq.vendor||'',hq.cat||'',hq.contact||'',hq.contactn||'']);
       rows.push(Array(hdr.length).fill(''));
     });
@@ -1653,10 +1714,10 @@ function applyAuth(){
   document.getElementById('btnAdminPanel').style.display=currentUser.role==='admin'?'inline-flex':'none';
   if(currentUser.role==='user'){
     const pn=document.getElementById('pPlannerName');const nsn=document.getElementById('nsPlannerName');
-    if(pn){pn.value=currentUser.plannerName;pn.readOnly=true;pn.style.opacity='.7';}
-    if(nsn){nsn.value=currentUser.plannerName;nsn.readOnly=true;nsn.style.opacity='.7';}
+    if(pn){pn.value=currentUser.plannerName;}
+    if(nsn){nsn.value=currentUser.plannerName;}
   }
-  renderAllPlans();renderTeamPlanList();renderNsPlanList();updHdr();
+  refreshDbPlansFull().then(()=>{renderAllPlans();renderTeamPlanList();renderNsPlanList();updHdr();});
   toast('Welcome, '+currentUser.displayName+'! 👋','ok');
 }
 
@@ -1670,8 +1731,7 @@ async function tryRestoreSession(){
 
 function visiblePlans(){
   if(!currentUser)return[];
-  if(currentUser.role==='admin')return teamPlans;
-  return teamPlans.filter(tp=>tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim()).some(n=>n===currentUser.plannerName.toLowerCase().trim()));
+  return teamPlans;
 }
 
 // ══ ADMIN PANEL ══════════════════════════════════════
