@@ -291,6 +291,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .urow-role{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
 .urow-role.admin{background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:var(--ylw);}
 .urow-role.user{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);color:var(--acc);}
+.urow-role.viewer{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.35);color:var(--acc3);}
 .urow-plans{font-size:10px;color:var(--mut);font-family:var(--mono);flex-shrink:0;}
 .urow-del{background:none;border:none;color:var(--mut);cursor:pointer;font-size:15px;padding:0 2px;flex-shrink:0;}
 .urow-del:hover{color:var(--red);}
@@ -352,6 +353,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
       </div>
       <div class="admin-sec">
         <div class="admin-sec-title">➕ Add New User</div>
+        <div class="admin-add-row" style="grid-template-columns:1fr;margin-bottom:8px">
+          <div class="admin-inp-grp"><div class="admin-lbl">🎭 Role</div>
+            <select class="admin-inp" id="aNewRole" style="cursor:pointer">
+              <option value="user">👤 User — يشوف خططه هو فقط</option>
+              <option value="viewer">👁 Viewer — يشوف كل الخطط (قراءة فقط)</option>
+            </select>
+          </div>
+        </div>
         <div class="admin-add-row">
           <div class="admin-inp-grp"><div class="admin-lbl">Display Name</div><input class="admin-inp" id="aNewName" type="text" placeholder="e.g. Ahmed"></div>
           <div class="admin-inp-grp"><div class="admin-lbl">Username</div><input class="admin-inp" id="aNewUser" type="text" placeholder="e.g. ahmed.z"></div>
@@ -391,6 +400,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
     <div class="admin-inp-grp" style="margin-bottom:10px">
       <div class="admin-lbl">Planner Name (in plans)</div>
       <input class="admin-inp" id="editPlannerName" type="text" placeholder="Planner Name">
+    </div>
+    <div class="admin-inp-grp" style="margin-bottom:10px">
+      <div class="admin-lbl">🎭 Role</div>
+      <select class="admin-inp" id="editUserRole" style="cursor:pointer">
+        <option value="user">👤 User — يشوف خططه هو فقط</option>
+        <option value="viewer">👁 Viewer — يشوف كل الخطط (قراءة فقط)</option>
+      </select>
     </div>
     <div class="admin-inp-grp" style="margin-bottom:10px">
       <div class="admin-lbl">New Password <span style="color:var(--mut);font-weight:400">(leave blank to keep current)</span></div>
@@ -1768,11 +1784,13 @@ async function renderAdminPanel(){
   </div>`;
   ul.innerHTML=adminRow+users.map(u=>{
     const planCount=teamPlans.filter(tp=>tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim()).some(n=>n===(u.plannerName||u.displayName).toLowerCase().trim())).length;
+    const uRole=u.role==='viewer'?'viewer':'user';
+    const uRoleLabel=uRole==='viewer'?'👁 Viewer':'👤 User';
     return`<div class="urow">
       <div class="urow-avatar">${u.displayName.charAt(0).toUpperCase()}</div>
       <div class="urow-info"><div class="urow-name">${u.displayName}</div><div class="urow-user">@${u.username} · Planner: ${u.plannerName||u.displayName}</div></div>
-      <span class="urow-role user">User</span><span class="urow-plans">${planCount} plan(s)</span>
-      <button class="urow-edit" onclick="openEditUser(${u.id},'${u.username.replace(/'/g,"\\'")}','${(u.displayName||'').replace(/'/g,"\\'")}','${(u.plannerName||'').replace(/'/g,"\\'")}')">Edit</button>
+      <span class="urow-role ${uRole}">${uRoleLabel}</span><span class="urow-plans">${planCount} plan(s)</span>
+      <button class="urow-edit" onclick="openEditUser(${u.id},'${u.username.replace(/'/g,"\\'")}','${(u.displayName||'').replace(/'/g,"\\'")}','${(u.plannerName||'').replace(/'/g,"\\'")}','${uRole}')">Edit</button>
       <button class="urow-del" onclick="deleteUser(${u.id})" title="Delete user">🗑</button>
     </div>`;
   }).join('');
@@ -1791,13 +1809,14 @@ async function renderAdminPanel(){
 async function addUser(){
   const name=document.getElementById('aNewName').value.trim();const uname=document.getElementById('aNewUser').value.trim();
   const pass=document.getElementById('aNewPass').value.trim();const planner=document.getElementById('aNewPlanner').value.trim()||name;
+  const role=document.getElementById('aNewRole').value||'user';
   const errEl=document.getElementById('aAddErr');errEl.style.display='none';
   if(!name||!uname||!pass){errEl.textContent='Fill all fields';errEl.style.display='block';return;}
   try{
-    const res=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:uname,password:pass,displayName:name,plannerName:planner}),credentials:'include'});
+    const res=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:uname,password:pass,displayName:name,plannerName:planner,role}),credentials:'include'});
     if(!res.ok){const data=await res.json();errEl.textContent=data.error||'Error adding user';errEl.style.display='block';return;}
-    document.getElementById('aNewName').value='';document.getElementById('aNewUser').value='';document.getElementById('aNewPass').value='';document.getElementById('aNewPlanner').value='';
-    renderAdminPanel();toast('User '+name+' added ✅','ok');
+    document.getElementById('aNewName').value='';document.getElementById('aNewUser').value='';document.getElementById('aNewPass').value='';document.getElementById('aNewPlanner').value='';document.getElementById('aNewRole').value='user';
+    renderAdminPanel();toast('User '+name+' added as '+role+' ✅','ok');
   }catch(e){errEl.textContent='Network error';errEl.style.display='block';}
 }
 
@@ -1807,11 +1826,12 @@ async function deleteUser(dbId){
   catch(e){toast('Delete failed','er');}
 }
 
-function openEditUser(id,username,displayName,plannerName){
+function openEditUser(id,username,displayName,plannerName,role){
   document.getElementById('editUserId').value=id;
   document.getElementById('editUserHint').textContent='@'+username;
   document.getElementById('editDisplayName').value=displayName;
   document.getElementById('editPlannerName').value=plannerName;
+  document.getElementById('editUserRole').value=role||'user';
   document.getElementById('editPassword').value='';
   document.getElementById('editUserErr').style.display='none';
   document.getElementById('editUserOvl').classList.add('on');
@@ -1829,7 +1849,8 @@ async function saveEditUser(){
   const errEl=document.getElementById('editUserErr');
   errEl.style.display='none';
   if(!displayName){errEl.textContent='Display name is required';errEl.style.display='block';return;}
-  const payload={displayName,plannerName:plannerName||displayName};
+  const role=document.getElementById('editUserRole').value||'user';
+  const payload={displayName,plannerName:plannerName||displayName,role};
   if(password)payload.password=password;
   try{
     const res=await fetch(`/api/users/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'include'});
