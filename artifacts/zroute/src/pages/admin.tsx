@@ -129,11 +129,23 @@ function UsersTab() {
             <DialogTitle>Add New User</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Role & Permissions</Label>
+              <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User — يشوف خططه هو فقط</SelectItem>
+                  <SelectItem value="viewer">Viewer — يشوف كل الخطط + يصدّر Excel (قراءة فقط)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {[
+              { key: "displayName", label: "Display Name", type: "text" },
               { key: "username", label: "Username", type: "text" },
               { key: "password", label: "Password", type: "password" },
-              { key: "displayName", label: "Display Name", type: "text" },
-              { key: "plannerName", label: "Planner Name", type: "text" },
+              { key: "plannerName", label: "Planner Name (in plans)", type: "text" },
             ].map(({ key, label, type }) => (
               <div key={key} className="space-y-1.5">
                 <Label>{label}</Label>
@@ -144,18 +156,6 @@ function UsersTab() {
                 />
               </div>
             ))}
-            <div className="space-y-1.5">
-              <Label>Role & Permissions</Label>
-              <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">User — sees only their own plans</SelectItem>
-                  <SelectItem value="viewer">Viewer — sees all plans + can export Excel (read-only)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
