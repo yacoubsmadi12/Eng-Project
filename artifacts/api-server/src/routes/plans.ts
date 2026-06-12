@@ -14,7 +14,9 @@ function requireAuth(req: any, res: any, next: any) {
 
 router.get("/plans", requireAuth, async (req, res) => {
   const user = (req.session as any).user;
-  const rows = await db.select().from(plansTable);
+  const rows = user.role === "user"
+    ? await db.select().from(plansTable).where(eq(plansTable.plannerName, user.plannerName))
+    : await db.select().from(plansTable);
   const plans = rows.map(r => ({
     id: r.clientId,
     teamName: r.teamName,
