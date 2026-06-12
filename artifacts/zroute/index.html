@@ -642,6 +642,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
       <div id="rpStops"></div>
       <div style="margin-top:9px;display:flex;gap:5px">
         <button class="btn btn-grn btn-full" id="rpGM" onclick="openCurrentGMRoute()">📱 Open in Google Maps</button>
+        <div id="rpGMParts" style="display:none;margin-top:6px;flex-direction:column;gap:5px"></div>
       </div>
     </div>
   </div>
@@ -1267,11 +1268,48 @@ async function calcDayRoute(ti,di){
 }
 
 function buildGoogleMapsUrl(ordered){
+  // Deduplicate consecutive identical coords
   const pts=ordered.filter((s,i,arr)=>i===0||!(s.lat===arr[i-1].lat&&s.lng===arr[i-1].lng));
-  return`https://www.google.com/maps/dir/${pts.map(s=>`${s.lat},${s.lng}`).join('/')}/`;
+  const CHUNK=9; // Google Maps reliably handles max ~9 waypoints per URL
+  if(pts.length<=CHUNK){
+    return[`https://www.google.com/maps/dir/${pts.map(s=>`${s.lat},${s.lng}`).join('/')}/`];
+  }
+  // Split into overlapping chunks so routes connect end-to-end
+  const urls=[];
+  for(let i=0;i<pts.length;i+=CHUNK-1){
+    const chunk=pts.slice(i,i+CHUNK);
+    urls.push(`https://www.google.com/maps/dir/${chunk.map(s=>`${s.lat},${s.lng}`).join('/')}/`);
+    if(chunk.length<CHUNK)break;
+  }
+  return urls;
 }
 
-function openCurrentGMRoute(){if(!currentGMUrl){toast('Calculate a route first','in');return;}window.open(currentGMUrl,'_blank');}
+function openCurrentGMRoute(){
+  if(!currentGMUrl||!currentGMUrl.length){toast('Calculate a route first','in');return;}
+  const parts=document.getElementById('rpGMParts');
+  if(currentGMUrl.length===1){
+    // Single chunk — open directly, works on all devices
+    parts.style.display='none';
+    window.open(currentGMUrl[0],'_blank');
+    return;
+  }
+  // Multiple parts — toggle part links panel
+  if(parts.style.display==='flex'){parts.style.display='none';return;}
+  const totalStops=currentGMUrl.reduce((_,u,i,arr)=>{
+    const m=u.match(/\/dir\/(.*)\//);if(!m)return _;
+    const cnt=(m[1].match(/\//g)||[]).length+1;
+    return _+(i===0?cnt:cnt-1); // subtract 1 for overlap except first
+  },0);
+  const CHUNK=9;
+  parts.innerHTML=currentGMUrl.map((url,i)=>{
+    const start=i===0?1:i*(CHUNK-1)+1;
+    const end=Math.min(start+CHUNK-1-(i===0?0:1),totalStops);
+    return`<a href="${url}" target="_blank" rel="noopener" style="display:block;padding:7px 10px;background:var(--acc2,#0d9488);border-radius:6px;color:#fff;font-size:12px;font-weight:600;text-decoration:none;text-align:center">
+      📍 Part ${i+1} — Stops ${start}–${end}
+    </a>`;
+  }).join('');
+  parts.style.display='flex';
+}
 
 async function optimizeDayRoute(ti,di){
   const tp=teamPlans[ti];if(!tp)return;const dg=tp.dayGroups[di];if(!dg||!dg.sites.length){toast('No sites in this day','er');return;}
@@ -1474,7 +1512,12 @@ function openSiteDetail(siteId){
   document.getElementById('siteOvl').classList.add('on');
 }
 function closeSiteDetail(){document.getElementById('siteOvl').classList.remove('on');currentSiteDetail=null;}
-function navToSite(siteId){const s=sites.find(x=>x.id===siteId);if(!s)return;window.open(`https://www.google.com/maps/dir//${s.lat},${s.lng}/`,'_blank');}
+function navToSite(siteId){
+  const s=sites.find(x=>x.id===siteId);if(!s)return;
+  // Universal format — works on iOS, Android, Samsung, desktop browsers
+  // ?daddr= opens navigation to destination from current location on all platforms
+  window.open(`https://maps.google.com/?daddr=${s.lat},${s.lng}`,'_blank');
+}
 
 // ══ SITES LIST ══════════════════════════════════════
 function renderSites(filter=''){
