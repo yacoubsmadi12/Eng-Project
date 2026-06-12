@@ -344,6 +344,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
 .urow-role{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
 .urow-role.admin{background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:var(--ylw);}
 .urow-role.user{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);color:var(--acc);}
+.urow-role.viewer{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.35);color:var(--acc3);}
 .urow-plans{font-size:10px;color:var(--mut);font-family:var(--mono);flex-shrink:0;}
 .urow-del{background:none;border:none;color:var(--mut);cursor:pointer;font-size:15px;padding:0 2px;flex-shrink:0;}
 .urow-del:hover{color:var(--red);}
@@ -397,6 +398,15 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);display:flex;
       <!-- Add User -->
       <div class="admin-sec">
         <div class="admin-sec-title">➕ Add New User</div>
+        <div class="admin-add-row" style="margin-bottom:8px;">
+          <div class="admin-inp-grp" style="flex:1">
+            <div class="admin-lbl">Role</div>
+            <select class="admin-inp" id="aNewRole" style="cursor:pointer;">
+              <option value="user">👤 User — يشوف خططه هو فقط</option>
+              <option value="viewer">👁 Viewer — يشوف كل الخطط (قراءة فقط)</option>
+            </select>
+          </div>
+        </div>
         <div class="admin-add-row">
           <div class="admin-inp-grp">
             <div class="admin-lbl">Display Name</div>
@@ -2232,7 +2242,8 @@ function doLogin(){
   const users = loadUsers();
   const found = users.find(x => x.username === u && x.password === p);
   if(found){
-    currentUser = {username:found.username, displayName:found.displayName, plannerName:found.plannerName||found.displayName, role:'user'};
+    const savedRole = found.role === 'viewer' ? 'viewer' : 'user';
+    currentUser = {username:found.username, displayName:found.displayName, plannerName:found.plannerName||found.displayName, role:savedRole};
     sessionStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
     applyAuth();
     return;
@@ -2263,15 +2274,14 @@ function applyAuth(){
   badge.style.display = 'flex';
   document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
   document.getElementById('userDisplayName').textContent = currentUser.displayName;
-  document.getElementById('userRoleLabel').textContent = currentUser.role === 'admin' ? '🛡️ Admin' : '👤 User';
+  const roleLabel = currentUser.role === 'admin' ? '🛡️ Admin' : currentUser.role === 'viewer' ? '👁 Viewer' : '👤 User';
+  document.getElementById('userRoleLabel').textContent = roleLabel;
 
   // Admin button
   document.getElementById('btnAdminPanel').style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
 
-  // Tabs visibility — users see all tabs but plans are filtered
-  // Planning tab: users can only generate plans (planner name auto-filled & locked)
-  if(currentUser.role === 'user'){
-    // Auto-fill planner name fields with logged-in user's planner name
+  // Planning tab: user & viewer — auto-fill planner name; viewer also locks Save button
+  if(currentUser.role === 'user' || currentUser.role === 'viewer'){
     const pn = document.getElementById('pPlannerName');
     const nsn = document.getElementById('nsPlannerName');
     if(pn){ pn.value = currentUser.plannerName; pn.readOnly = true; pn.style.opacity = '.7'; }
@@ -2303,7 +2313,7 @@ function tryRestoreSession(){
 // ── Filter plans by current user (used in render functions) ──
 function visiblePlans(){
   if(!currentUser) return [];
-  if(currentUser.role === 'admin') return teamPlans;
+  if(currentUser.role === 'admin' || currentUser.role === 'viewer') return teamPlans;
   // User sees only plans where plannerName matches their plannerName
   return teamPlans.filter(tp =>
     tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim())
@@ -2335,13 +2345,15 @@ function renderAdminPanel(){
         tp.plannerName.toLowerCase().split(/[/,]+/).map(s=>s.trim())
           .some(n => n === (u.plannerName||u.displayName).toLowerCase().trim())
       ).length;
+      const uRole = u.role === 'viewer' ? 'viewer' : 'user';
+      const uRoleLabel = uRole === 'viewer' ? '👁 Viewer' : '👤 User';
       return `<div class="urow">
         <div class="urow-avatar">${u.displayName.charAt(0).toUpperCase()}</div>
         <div class="urow-info">
           <div class="urow-name">${u.displayName}</div>
           <div class="urow-user">@${u.username} · 🔑 ${u.password} · Planner: ${u.plannerName||u.displayName}</div>
         </div>
-        <span class="urow-role user">User</span>
+        <span class="urow-role ${uRole}">${uRoleLabel}</span>
         <span class="urow-plans">${planCount} plan(s)</span>
         <button class="urow-del" onclick="deleteUser(${i})" title="Delete user">🗑</button>
       </div>`;
@@ -2381,6 +2393,7 @@ function addUser(){
   const uname = document.getElementById('aNewUser').value.trim();
   const pass = document.getElementById('aNewPass').value.trim();
   const planner = document.getElementById('aNewPlanner').value.trim() || name;
+  const role = document.getElementById('aNewRole').value;
   const errEl = document.getElementById('aAddErr');
   errEl.style.display = 'none';
 
@@ -2388,19 +2401,19 @@ function addUser(){
   if(uname === ADMIN_USER){ errEl.textContent='Username reserved'; errEl.style.display='block'; return; }
 
   const users = loadUsers();
-  // No user limit
   if(users.find(x=>x.username===uname)){ errEl.textContent='Username already exists'; errEl.style.display='block'; return; }
 
-  users.push({username:uname, password:pass, displayName:name, plannerName:planner});
+  users.push({username:uname, password:pass, displayName:name, plannerName:planner, role:role});
   saveUsers(users);
 
   document.getElementById('aNewName').value='';
   document.getElementById('aNewUser').value='';
   document.getElementById('aNewPass').value='';
   document.getElementById('aNewPlanner').value='';
+  document.getElementById('aNewRole').value='user';
 
   renderAdminPanel();
-  toast('User ' + name + ' added ✅', 'ok');
+  toast('User ' + name + ' added as ' + role + ' ✅', 'ok');
 }
 
 function deleteUser(idx){
